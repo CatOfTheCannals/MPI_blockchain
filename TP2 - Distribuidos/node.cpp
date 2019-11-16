@@ -160,19 +160,21 @@ pthread_t thread;
   pthread_create(&thread, NULL, proof_of_work, NULL);
   while(true){
 
-      //TODO: Recibir mensajes de otros nodos
+      //Recibir mensajes de otros nodos
       Block buffer;
       int tag;
       MPI_Status status;
-      int ierr = MPI_Recv(&buffer, 1, (MPI_Datatype)MPI_BLOCK, 0, tag, MPI_COMM_WORLD, &status);
-      //TODO: Si es un mensaje de nuevo bloque, llamar a la función
+      int ierr = MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, tag, MPI_COMM_WORLD, &status);
+      //Si es un mensaje de nuevo bloque, llamar a la función
       if(tag==TAG_NEW_BLOCK){
-      // validate_block_for_chain con el bloque recibido y el estado de MPI
+        // validate_block_for_chain con el bloque recibido y el estado de MPI
+        validate_block_for_chain(&buffer,&status);
+      //Si es un mensaje de pedido de cadena,
       }else if(tag==TAG_CHAIN_HASH){
-      //TODO: Si es un mensaje de pedido de cadena,
-      //responderlo enviando los bloques correspondientes
+      //TODO:responderlo enviando los bloques correspondientes
+      
       }else{
-
+        printf("NO RECIBIO NADA");
       }
   }
 
