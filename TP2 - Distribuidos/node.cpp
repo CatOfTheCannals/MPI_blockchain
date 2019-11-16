@@ -155,19 +155,25 @@ int node(){
   last_block_in_chain->difficulty = DEFAULT_DIFFICULTY;
   last_block_in_chain->created_at = static_cast<unsigned long int> (time(NULL));
   memset(last_block_in_chain->previous_block_hash,0,HASH_SIZE);
-
+pthread_t thread;
   //TODO: Crear thread para minar
-
+  pthread_create(&thread, NULL, proof_of_work, NULL);
   while(true){
 
       //TODO: Recibir mensajes de otros nodos
-
+      Block buffer;
+      int tag;
+      MPI_Status status;
+      int ierr = MPI_Recv(&buffer, 1, (MPI_Datatype)MPI_BLOCK, 0, tag, MPI_COMM_WORLD, &status);
       //TODO: Si es un mensaje de nuevo bloque, llamar a la función
+      if(tag==TAG_NEW_BLOCK){
       // validate_block_for_chain con el bloque recibido y el estado de MPI
-
+      }else if(tag==TAG_CHAIN_HASH){
       //TODO: Si es un mensaje de pedido de cadena,
       //responderlo enviando los bloques correspondientes
+      }else{
 
+      }
   }
 
   delete last_block_in_chain;

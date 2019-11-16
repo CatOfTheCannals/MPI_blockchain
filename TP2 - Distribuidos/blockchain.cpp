@@ -3,9 +3,6 @@
 #include <mpi.h>
 
 
-using MPI::COMM_WORLD; using MPI::ANY_SOURCE; using MPI::ANY_TAG;
-using MPI::INT; using MPI::CHAR; using MPI::BOOL;
-using MPI::Status;
 
 using namespace std;
 
