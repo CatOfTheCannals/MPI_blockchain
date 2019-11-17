@@ -18,14 +18,13 @@ map<string,Block> node_blocks;
 bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
   //Enviar mensaje TAG_CHAIN_HASH
-  MPI_Send(rBlock, 1, *MPI_BLOCK, 1, TAG_CHAIN_HASH, MPI_COMM_WORLD);
+  MPI_Send(rBlock, 1, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_HASH, MPI_COMM_WORLD);
 
   Block *blockchain = new Block[VALIDATION_BLOCKS];
 
   //Recibir mensaje TAG_CHAIN_RESPONSE
-  Block buffer;
   MPI_Status statusRes;
-  MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
+  MPI_Recv(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
   //TODO: Verificar que los bloques recibidos
   //sean válidos y se puedan acoplar a la cadena
     //delete []blockchain;
@@ -174,6 +173,7 @@ int node(){
       Block buffer;
       MPI_Status status;
       MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      unsigned int rank = buffer.node_owner_number;
       //Si es un mensaje de nuevo bloque, llamar a la función
       if(status.MPI_TAG==TAG_NEW_BLOCK){
         // validate_block_for_chain con el bloque recibido y el estado de MPI
@@ -191,7 +191,7 @@ int node(){
           buffer = node_blocks.at(buffer.previous_block_hash);
         }
         // Envío la cadena definida 
-        MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, 1 /* ¿QUÉ PONGO ACÁ? :C */, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD); // FNAIGAENIAEGNAE
+        MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rank /* ¿QUÉ PONGO ACÁ? :C */, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD); // FNAIGAENIAEGNAE
 
         delete []blockchain;
         
