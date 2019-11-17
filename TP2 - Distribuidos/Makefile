@@ -1,6 +1,6 @@
 .PHONY : all clean run new
 
-MPIROOT = /usr
+MPIROOT = /home/oci/.openmpi/
 
 CFLAGS+= -Wall -std=c++11 -pthread -g $(INCL)
 CC=gcc
