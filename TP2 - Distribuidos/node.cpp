@@ -17,12 +17,15 @@ map<string,Block> node_blocks;
 //Si nos separan más de VALIDATION_BLOCKS bloques de distancia entre las cadenas, se descarta por seguridad
 bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
-  //TODO: Enviar mensaje TAG_CHAIN_HASH
+  //Enviar mensaje TAG_CHAIN_HASH
+  MPI_Send(rBlock, 1, *MPI_BLOCK, 1, TAG_CHAIN_HASH, MPI_COMM_WORLD);
 
   Block *blockchain = new Block[VALIDATION_BLOCKS];
 
   //TODO: Recibir mensaje TAG_CHAIN_RESPONSE
-
+  Block buffer;
+  MPI_Status statusRes;
+  MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
   //TODO: Verificar que los bloques recibidos
   //sean válidos y se puedan acoplar a la cadena
     //delete []blockchain;
@@ -155,22 +158,21 @@ int node(){
   last_block_in_chain->difficulty = DEFAULT_DIFFICULTY;
   last_block_in_chain->created_at = static_cast<unsigned long int> (time(NULL));
   memset(last_block_in_chain->previous_block_hash,0,HASH_SIZE);
-pthread_t thread;
-  //TODO: Crear thread para minar
+  pthread_t thread;
+  //Crear thread para minar
   pthread_create(&thread, NULL, proof_of_work, NULL);
   while(true){
 
       //Recibir mensajes de otros nodos
       Block buffer;
-      int tag;
       MPI_Status status;
-      int ierr = MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, tag, MPI_COMM_WORLD, &status);
+      MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       //Si es un mensaje de nuevo bloque, llamar a la función
-      if(tag==TAG_NEW_BLOCK){
+      if(status.MPI_TAG==TAG_NEW_BLOCK){
         // validate_block_for_chain con el bloque recibido y el estado de MPI
         validate_block_for_chain(&buffer,&status);
       //Si es un mensaje de pedido de cadena,
-      }else if(tag==TAG_CHAIN_HASH){
+      }else if(status.MPI_TAG==TAG_CHAIN_HASH){
       //TODO:responderlo enviando los bloques correspondientes
       
       }else{
