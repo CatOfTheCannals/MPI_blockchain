@@ -98,7 +98,8 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 //Envia el bloque minado a todos los nodos
 void broadcast_block(const Block *block){
   //No enviar a mí mismo
-  //TODO: Completar
+  MPI_Bcast(&block,1,*MPI_BLOCK,mpi_rank,MPI_COMM_WORLD);
+
 }
 
 //Proof of work
