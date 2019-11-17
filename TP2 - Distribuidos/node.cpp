@@ -181,7 +181,20 @@ int node(){
       //Si es un mensaje de pedido de cadena,
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){
       //TODO:responderlo enviando los bloques correspondientes
-      
+        // Defino la cadena a enviar => Voy a llenarla con min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer
+        Block *blockchain = new Block[VALIDATION_BLOCKS];
+        for (int i = 0; i < VALIDATION_BLOCKS; ++i){
+          if(buffer.previous_block_hash == 0){
+            break;
+          }
+          blockchain[i] = buffer;
+          buffer = node_blocks.at(buffer.previous_block_hash);
+        }
+        // Envío la cadena definida 
+        MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, 1 /* ¿QUÉ PONGO ACÁ? :C */, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD); // FNAIGAENIAEGNAE
+
+        delete []blockchain;
+        
       }else{
         printf("NO RECIBIO NADA");
       }
