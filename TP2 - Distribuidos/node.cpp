@@ -100,16 +100,6 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 }
 
 
-//Envia el bloque minado a todos los nodos
-void broadcast_block(const Block *block){
-
-  //No enviar a mí mismo
-  int bcast_return_status = MPI_Bcast(&block, 1, *MPI_BLOCK, mpi_rank, MPI_COMM_WORLD);
-
-  if(bcast_return_status != MPI_SUCCESS) {
-    printf("[%d] broadcast failed with error code %d \n",mpi_rank, bcast_return_status);
-  }
-}
 
 void send_block_to_everyone(const Block *block){
 
@@ -171,6 +161,50 @@ void* proof_of_work(void *ptr){
     return NULL;
 }
 
+int send_blockchain(Block &buffer){
+  // asume VALIDATION_BLOCKS > 0
+  // Defino la cadena a enviar => Voy a llenarla con:
+  // min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer
+
+  unsigned int rank = buffer.node_owner_number;
+
+  Block *blockchain = new Block[VALIDATION_BLOCKS];
+  for (int i = 0; i < VALIDATION_BLOCKS; ++i){
+    blockchain[i] = buffer;
+    buffer = node_blocks.at(buffer.previous_block_hash);
+    if(buffer.previous_block_hash == 0){
+      break;
+    }
+  }
+
+  // Envío la cadena definida al resto de los nodos
+  for(int i = 0; i < total_nodes; i++){
+  
+    if(i == mpi_rank) continue;
+
+    int send_return_status = MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, i, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD);
+    if(send_return_status != MPI_SUCCESS) {
+      printf("[%d] send to node %d failed with error code %d \n",mpi_rank, i, send_return_status);
+    }
+  } 
+
+  delete []blockchain;
+
+  return 0;
+}
+
+Block* initialize_first_block() {
+  Block *b = new Block;
+
+  //Inicializo el primer bloque
+  b->index = 0;
+  b->node_owner_number = mpi_rank;
+  b->difficulty = DEFAULT_DIFFICULTY;
+  b->created_at = static_cast<unsigned long int> (time(NULL));
+  memset(b->previous_block_hash,0,HASH_SIZE);
+
+  return b;
+}
 
 int node(){
 
@@ -182,17 +216,11 @@ int node(){
   srand(time(NULL) + mpi_rank);
   printf("[MPI] Lanzando proceso %u\n", mpi_rank);
 
-  // TODO(charli): verificar si esto es necesario. la idea seria asegurar que se crearon todos los procesos
+  // TODO(charli): verificar si el barrier es necesario. la idea seria asegurar que se crearon todos los procesos
   // MPI_Barrier(MPI_COMM_WORLD);
 
-  last_block_in_chain = new Block;
+  last_block_in_chain = initialize_first_block();
 
-  //Inicializo el primer bloque
-  last_block_in_chain->index = 0;
-  last_block_in_chain->node_owner_number = mpi_rank;
-  last_block_in_chain->difficulty = DEFAULT_DIFFICULTY;
-  last_block_in_chain->created_at = static_cast<unsigned long int> (time(NULL));
-  memset(last_block_in_chain->previous_block_hash,0,HASH_SIZE);
   pthread_t thread;
   //Crear thread para minar
   pthread_create(&thread, NULL, proof_of_work, NULL);
@@ -202,7 +230,6 @@ int node(){
       Block buffer;
       MPI_Status status;
       MPI_Recv(&buffer, 1, *MPI_BLOCK, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      unsigned int rank = buffer.node_owner_number;
 
       //Si es un mensaje de nuevo bloque, llamar a la función
       if(status.MPI_TAG==TAG_NEW_BLOCK){
@@ -214,27 +241,13 @@ int node(){
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){
 
         printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
+        send_blockchain(buffer);
 
-      //TODO:responderlo enviando los bloques correspondientes
-        // Defino la cadena a enviar => Voy a llenarla con min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer
-        Block *blockchain = new Block[VALIDATION_BLOCKS];
-        for (int i = 0; i < VALIDATION_BLOCKS; ++i){
-          if(buffer.previous_block_hash == 0){
-            break;
-          }
-          blockchain[i] = buffer;
-          buffer = node_blocks.at(buffer.previous_block_hash);
-        }
-        // Envío la cadena definida 
-        MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rank /* ¿QUÉ PONGO ACÁ? :C */, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD); // FNAIGAENIAEGNAE
-
-        delete []blockchain;
-        
       }else{
         printf("NO RECIBIO NADA\n");
       }
   }
 
-  delete last_block_in_chain;
+  delete last_block_in_chain; // TODO(charli): verificar si se llega a este delete
   return 0;
 }
