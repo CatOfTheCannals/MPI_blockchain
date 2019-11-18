@@ -72,22 +72,27 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     }
 
 
-    //TODO: Si el índice del bloque recibido es igua al índice de mi último bloque actual,
+    //Si el índice del bloque recibido es igua al índice de mi último bloque actual,
     //entonces hay dos posibles forks de la blockchain pero mantengo la mía
-      //printf("[%d] Conflicto suave: Conflicto de branch (%d) contra %d \n",mpi_rank,rBlock->index,status->MPI_SOURCE);
-      //return false;
+    if(rBlock->index==(last_block_in_chain->index)){
+      printf("[%d] Conflicto suave: Conflicto de branch (%d) contra %d \n",mpi_rank,rBlock->index,status->MPI_SOURCE);
+      return false;
+    }
 
-    //TODO: Si el índice del bloque recibido es anterior al índice de mi último bloque actual,
+    //Si el índice del bloque recibido es anterior al índice de mi último bloque actual,
     //entonces lo descarto porque asumo que mi cadena es la que está quedando preservada.
-      //printf("[%d] Conflicto suave: Descarto el bloque (%d vs %d) contra %d \n",mpi_rank,rBlock->index,last_block_in_chain->index, status->MPI_SOURCE);
-      //return false;
+    if(rBlock->index<(last_block_in_chain->index)){
+      printf("[%d] Conflicto suave: Descarto el bloque (%d vs %d) contra %d \n",mpi_rank,rBlock->index,last_block_in_chain->index, status->MPI_SOURCE);
+      return false;
+    }
 
-    //TODO: Si el índice del bloque recibido está más de una posición adelantada a mi último bloque actual,
+    //Si el índice del bloque recibido está más de una posición adelantada a mi último bloque actual,
     //entonces me conviene abandonar mi blockchain actual
-      //printf("[%d] Perdí la carrera por varios contra %d \n", mpi_rank, status->MPI_SOURCE);
-      //bool res = verificar_y_migrar_cadena(rBlock,status);
-      //return res;
-
+    if(rBlock->index>(last_block_in_chain->index)){
+      printf("[%d] Perdí la carrera por varios contra %d \n", mpi_rank, status->MPI_SOURCE);
+      bool res = verificar_y_migrar_cadena(rBlock,status);
+      return res;
+    }
   }
 
   printf("[%d] Error duro: Descarto el bloque recibido de %d porque no es válido \n",mpi_rank,status->MPI_SOURCE);
