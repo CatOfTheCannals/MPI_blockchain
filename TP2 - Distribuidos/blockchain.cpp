@@ -19,7 +19,6 @@ int main(int argc, char **argv) {
 	  MPI_Abort(MPI_COMM_WORLD, status);
   }
 
-
   //Defino un nuevo tipo de datos de MPI para Block: MPI_BLOCK
   MPI_BLOCK = new MPI_Datatype;
   define_block_data_type_for_MPI(MPI_BLOCK);

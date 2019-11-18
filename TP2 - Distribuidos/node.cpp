@@ -9,7 +9,7 @@
 #include <mpi.h>
 #include <map>
 
-int total_nodes, mpi_rank;
+int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
 map<string,Block> node_blocks;
 
@@ -97,14 +97,33 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
 //Envia el bloque minado a todos los nodos
 void broadcast_block(const Block *block){
-  //No enviar a mí mismo
-  MPI_Bcast(&block,1,*MPI_BLOCK,mpi_rank,MPI_COMM_WORLD);
 
+  //No enviar a mí mismo
+  int bcast_return_status = MPI_Bcast(&block, 1, *MPI_BLOCK, mpi_rank, MPI_COMM_WORLD);
+
+  if(bcast_return_status != MPI_SUCCESS) {
+    printf("[%d] broadcast failed with error code %d \n",mpi_rank, bcast_return_status);
+  }
+}
+
+void send_block_to_everyone(const Block *block){
+
+  for(int i = 0; i < total_nodes; i++){
+  
+    if(i == mpi_rank) continue;
+
+    int send_return_status = MPI_Send(&block, 1, *MPI_BLOCK, i, TAG_NEW_BLOCK, MPI_COMM_WORLD);
+
+    if(send_return_status != MPI_SUCCESS) {
+      printf("[%d] send to node %d failed with error code %d \n",mpi_rank, i, send_return_status);
+    }
+  }
 }
 
 //Proof of work
 //TODO: Advertencia: puede tener condiciones de carrera
 void* proof_of_work(void *ptr){
+
     string hash_hex_str;
     Block block;
     unsigned int mined_blocks = 0;
@@ -134,10 +153,11 @@ void* proof_of_work(void *ptr){
             *last_block_in_chain = block;
             strcpy(last_block_in_chain->block_hash, hash_hex_str.c_str());
             node_blocks[hash_hex_str] = *last_block_in_chain;
-            printf("[%d] Agregué un producido con index %d \n",mpi_rank,last_block_in_chain->index);
+            // printf("[%d] Agregué un producido con index %d \n",mpi_rank,last_block_in_chain->index);
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
-            broadcast_block(last_block_in_chain);
+            // broadcast_block(last_block_in_chain);
+            send_block_to_everyone(last_block_in_chain);
           }
       }
 
@@ -157,6 +177,9 @@ int node(){
   srand(time(NULL) + mpi_rank);
   printf("[MPI] Lanzando proceso %u\n", mpi_rank);
 
+  // TODO(charli): verificar si esto es necesario. la idea seria asegurar que se crearon todos los procesos
+  // MPI_Barrier(MPI_COMM_WORLD);
+
   last_block_in_chain = new Block;
 
   //Inicializo el primer bloque
@@ -173,14 +196,20 @@ int node(){
       //Recibir mensajes de otros nodos
       Block buffer;
       MPI_Status status;
-      MPI_Recv(&buffer, 1, *MPI_BLOCK, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      MPI_Recv(&buffer, 1, *MPI_BLOCK, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       unsigned int rank = buffer.node_owner_number;
+
       //Si es un mensaje de nuevo bloque, llamar a la función
       if(status.MPI_TAG==TAG_NEW_BLOCK){
+        printf("[%u] validate_block_for_chain \n", mpi_rank);
+
         // validate_block_for_chain con el bloque recibido y el estado de MPI
         validate_block_for_chain(&buffer,&status);
       //Si es un mensaje de pedido de cadena,
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){
+
+        printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
+
       //TODO:responderlo enviando los bloques correspondientes
         // Defino la cadena a enviar => Voy a llenarla con min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer
         Block *blockchain = new Block[VALIDATION_BLOCKS];
@@ -197,7 +226,7 @@ int node(){
         delete []blockchain;
         
       }else{
-        printf("NO RECIBIO NADA");
+        printf("NO RECIBIO NADA\n");
       }
   }
 
