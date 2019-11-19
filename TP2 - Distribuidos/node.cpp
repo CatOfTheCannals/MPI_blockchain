@@ -160,12 +160,13 @@ void* proof_of_work(void *ptr){
     return NULL;
 }
 
-int send_blockchain(Block &buffer){
+int send_blockchain(Block &buffer, const MPI_Status *status){
+
   // asume VALIDATION_BLOCKS > 0
   // Defino la cadena a enviar => Voy a llenarla con:
-  // min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer
+  // min{blockchain.len, VALIDATION_BLOCKS} bloques hacia atrás desde el bloque recibido en buffer 
 
-  unsigned int rank = buffer.node_owner_number;
+  unsigned int rank_of_asking_node = status->MPI_SOURCE; // 
 
   Block *blockchain = new Block[VALIDATION_BLOCKS];
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
@@ -176,16 +177,10 @@ int send_blockchain(Block &buffer){
     }
   }
 
-  // Envío la cadena definida al resto de los nodos
-  for(int i = 0; i < total_nodes; i++){
-  
-    if(i == mpi_rank) continue;
-
-    int send_return_status = MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, i, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD);
-    if(send_return_status != MPI_SUCCESS) {
-      printf("[%d] send to node %d failed with error code %d \n",mpi_rank, i, send_return_status);
-    }
-  } 
+  int send_return_status = MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rank_of_asking_node, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD);
+  if(send_return_status != MPI_SUCCESS) {
+    printf("[%d] send to node %d failed with error code %d \n",mpi_rank, rank_of_asking_node, send_return_status);
+  }
 
   delete []blockchain;
 
@@ -238,7 +233,7 @@ int node(){
       
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
         printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
-        send_blockchain(buffer);
+        send_blockchain(buffer, &status);
 
       }else{
         printf("NO RECIBIO NADA\n");
