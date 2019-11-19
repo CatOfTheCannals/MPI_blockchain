@@ -151,7 +151,6 @@ void* proof_of_work(void *ptr){
             // printf("[%d] Agregué un producido con index %d \n",mpi_rank,last_block_in_chain->index);
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
-            // broadcast_block(last_block_in_chain);
             send_block_to_everyone(last_block_in_chain);
           }
       }
@@ -234,12 +233,10 @@ int node(){
       //Si es un mensaje de nuevo bloque, llamar a la función
       if(status.MPI_TAG==TAG_NEW_BLOCK){
         printf("[%u] validate_block_for_chain \n", mpi_rank);
-
         // validate_block_for_chain con el bloque recibido y el estado de MPI
         validate_block_for_chain(&buffer,&status);
-      //Si es un mensaje de pedido de cadena,
-      }else if(status.MPI_TAG==TAG_CHAIN_HASH){
-
+      
+      }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
         printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
         send_blockchain(buffer);
 
