@@ -15,6 +15,7 @@ using namespace std;
 int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
 map<string,Block> node_blocks;
+pthread_mutex_t _sendMutex = PTHREAD_MUTEX_INITIALIZER;
 
 //Cuando me llega una cadena adelantada, y tengo que pedir los nodos que me faltan
 //Si nos separan más de VALIDATION_BLOCKS bloques de distancia entre las cadenas, se descarta por seguridad
@@ -40,6 +41,7 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
 //Verifica que el bloque tenga que ser incluido en la cadena, y lo agrega si corresponde
 bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
+  pthread_mutex_lock(&(_sendMutex));
   if(valid_new_block(rBlock)){
 
     //Agrego el bloque al diccionario, aunque no
@@ -52,6 +54,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     if((rBlock->index==1) && (last_block_in_chain->index==0)){
       last_block_in_chain=&blockToSet;
       printf("[%d] Agregado a la lista bloque con index %d enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
+      pthread_mutex_unlock(&(_sendMutex));
       return true;
     }
 
@@ -62,6 +65,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     if((rBlock->index==(last_block_in_chain->index)+1) && (rBlock->previous_block_hash==last_block_in_chain->block_hash)){
       last_block_in_chain=&blockToSet;
       printf("[%d] Agregado a la lista bloque con index %d enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
+      pthread_mutex_unlock(&(_sendMutex));
       return true;
     }
 
@@ -71,7 +75,9 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //entonces hay una blockchain más larga que la mía.
     if((rBlock->index==(last_block_in_chain->index)+1) && (rBlock->previous_block_hash!=last_block_in_chain->block_hash)){
       printf("[%d] Perdí la carrera por uno (%d) contra %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
-      return verificar_y_migrar_cadena(rBlock,status);
+      bool res = verificar_y_migrar_cadena(rBlock,status);
+      pthread_mutex_unlock(&(_sendMutex));
+      return res;
     }
 
 
@@ -79,6 +85,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //entonces hay dos posibles forks de la blockchain pero mantengo la mía
     if(rBlock->index==(last_block_in_chain->index)){
       printf("[%d] Conflicto suave: Conflicto de branch (%d) contra %d \n",mpi_rank,rBlock->index,status->MPI_SOURCE);
+      pthread_mutex_unlock(&(_sendMutex));
       return false;
     }
 
@@ -86,6 +93,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //entonces lo descarto porque asumo que mi cadena es la que está quedando preservada.
     if(rBlock->index<(last_block_in_chain->index)){
       printf("[%d] Conflicto suave: Descarto el bloque (%d vs %d) contra %d \n",mpi_rank,rBlock->index,last_block_in_chain->index, status->MPI_SOURCE);
+      pthread_mutex_unlock(&(_sendMutex));
       return false;
     }
 
@@ -94,11 +102,12 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     if(rBlock->index>(last_block_in_chain->index)){
       printf("[%d] Perdí la carrera por varios contra %d \n", mpi_rank, status->MPI_SOURCE);
       bool res = verificar_y_migrar_cadena(rBlock,status);
+      pthread_mutex_unlock(&(_sendMutex));
       return res;
     }
   }
-
   printf("[%d] Error duro: Descarto el bloque recibido de %d porque no es válido \n",mpi_rank,status->MPI_SOURCE);
+    pthread_mutex_unlock(&(_sendMutex));
   return false;
 }
 
@@ -172,7 +181,9 @@ void* proof_of_work(void *ptr){
             // printf("[%d] Agregué un producido con index %d \n",mpi_rank,last_block_in_chain->index);
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
+            pthread_mutex_lock(&(_sendMutex));
             send_block_to_everyone(last_block_in_chain);
+            pthread_mutex_unlock(&(_sendMutex));
             cout << "[" + to_string(mpi_rank) + "]: broadcast done." << endl; 
           }
       }
