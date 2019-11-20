@@ -148,7 +148,9 @@ void* proof_of_work(void *ptr){
       block.difficulty = DEFAULT_DIFFICULTY;
       block.created_at = static_cast<unsigned long int> (time(NULL));
       memcpy(block.previous_block_hash,block.block_hash,HASH_SIZE);
-
+      
+      //cout << "[" + to_string(mpi_rank) + "]: memcpy done." << endl;
+      
       //Agregar un nonce al azar al bloque para intentar resolver el problema
       gen_random_nonce(block.nonce);
 
@@ -157,6 +159,9 @@ void* proof_of_work(void *ptr){
 
       //Contar la cantidad de ceros iniciales (con el nuevo nonce)
       if(solves_problem(hash_hex_str)){
+
+          cout << "[" + to_string(mpi_rank) + "]: about to broadcast." << endl;
+
 
           //Verifico que no haya cambiado mientras calculaba
           if(last_block_in_chain->index < block.index){
@@ -168,6 +173,7 @@ void* proof_of_work(void *ptr){
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
             send_block_to_everyone(last_block_in_chain);
+            cout << "[" + to_string(mpi_rank) + "]: broadcast done." << endl; 
           }
       }
 
