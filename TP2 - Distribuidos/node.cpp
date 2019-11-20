@@ -211,10 +211,13 @@ int send_blockchain(Block &buffer, const MPI_Status *status){
   Block *blockchain = new Block[VALIDATION_BLOCKS];
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     blockchain[i] = buffer;
-    buffer = node_blocks.at(buffer.previous_block_hash);
+    cout << "[" + to_string(mpi_rank) + "]: estoy agregando el bloque " + to_string(i) + " de " + to_string(total_nodes) + " y el anterior tiene hash " + (string)buffer.previous_block_hash << endl;
     if(buffer.previous_block_hash == 0){
+      cout << "[" + to_string(mpi_rank) + "]: salgo" << endl;
       break;
     }
+    cout << "[" + to_string(mpi_rank) + "]: sigo  " << endl;
+    buffer = node_blocks.at(buffer.previous_block_hash);
   }
 
   int send_return_status = MPI_Send(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rank_of_asking_node, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD);
@@ -235,8 +238,8 @@ Block* initialize_first_block() {
   b->node_owner_number = mpi_rank;
   b->difficulty = DEFAULT_DIFFICULTY;
   b->created_at = static_cast<unsigned long int> (time(NULL));
-  memset(b->previous_block_hash,0,HASH_SIZE);
-
+  memset(b->block_hash,0,HASH_SIZE);
+  
   return b;
 }
 
