@@ -20,18 +20,88 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   //Enviar mensaje TAG_CHAIN_HASH
   MPI_Send(rBlock, 1, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_HASH, MPI_COMM_WORLD);
 
-  Block *blockchain = new Block[VALIDATION_BLOCKS];
+  Block *received_blockchain = new Block[VALIDATION_BLOCKS];
 
   //Recibir mensaje TAG_CHAIN_RESPONSE
   MPI_Status statusRes;
-  MPI_Recv(blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
-  //TODO: Verificar que los bloques recibidos
-  //sean válidos y se puedan acoplar a la cadena
-    //delete []blockchain;
-    //return true;
+  MPI_Recv(received_blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
 
+  // recorrer cadena recibida
+  bool invalid = false;
+  int i;
+  // TODO(cgiudice): el ultimo bloque de la lista esta en el cero?
+  // El primer bloque de la lista contiene el hash pedido y el mismo index que el bloque original?
+  if(rBlock->index == received_blockchain[0].index 
+    && string(received_blockchain[0].block_hash).compare(rBlock->block_hash) == 0){
+    
+    // El hash del bloque recibido es igual al calculado por la función block_to_hash.
+    string hash_hex_str;
+    block_to_hash(&received_blockchain[0],hash_hex_str);
 
-  delete []blockchain;
+    if(string(received_blockchain[0].block_hash).compare(hash_hex_str) == 0) {
+
+      
+      Block * current_node_from_list = last_block_in_chain;
+      for (i = 0; i < VALIDATION_BLOCKS; ++i){
+
+        Block current_received_block = received_blockchain[i];
+        if(current_received_block.previous_block_hash == 0){
+          break;
+        }
+        Block previous_block = received_blockchain[i+1];
+
+        // Cada bloque siguiente de la lista, contiene el hash definido en previous_block_hash del actual elemento.
+        // Cada bloque siguiente de la lista, contiene el índice anterior al actual elemento.
+        if(string(current_received_block.previous_block_hash).compare(previous_block.block_hash) == 0
+            && current_received_block.index - 1 == previous_block.index){
+
+          if(current_node_from_list->block_hash == current_received_block.block_hash ) { 
+            // found common node 
+            break; 
+          } else {
+            current_node_from_list = &node_blocks.at(current_node_from_list->previous_block_hash);
+          }
+        } else {
+          invalid = true;
+        }
+      }
+    } else {
+      invalid = true;
+    }
+  } else {
+    invalid = true;
+  }
+  if(!invalid) {
+    // deleteo lo que tengo que descartar de mi cadena
+    Block * current_node_from_list = last_block_in_chain;
+    while(current_node_from_list->previous_block_hash != 0){
+      // copy hash as key
+      string map_entry_to_delete = string(current_node_from_list->block_hash);
+
+      // get next elem
+      current_node_from_list = &node_blocks.at(current_node_from_list->previous_block_hash);
+
+      // erase map entry
+      node_blocks.erase(map_entry_to_delete);
+    }
+    // seteo nuevo last elements
+    last_block_in_chain = &received_blockchain[0];
+
+    // agrego las entradas de la nueva cadena
+    for(int j = 0; j < i; j++){
+      Block current_received_block = received_blockchain[j];
+
+      // TODO(charli): asegurar que current_received_block se pasa bien por copia
+      node_blocks.insert({string(current_received_block.block_hash), current_received_block}); 
+
+      if(current_received_block.previous_block_hash == 0) break;
+    }
+
+    delete []received_blockchain;
+    return true;
+  }
+
+  delete []received_blockchain;
   return false;
 }
 
