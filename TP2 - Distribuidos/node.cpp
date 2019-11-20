@@ -8,6 +8,9 @@
 #include <atomic>
 #include <mpi.h>
 #include <map>
+#include <iostream> 
+
+using namespace std;
 
 int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
@@ -108,12 +111,24 @@ void send_block_to_everyone(const Block *block){
   
     new_rank = (mpi_rank + i) % total_nodes;
 
-    int send_return_status = MPI_Send(&block, 1, *MPI_BLOCK, new_rank, TAG_NEW_BLOCK, MPI_COMM_WORLD);
+    int send_return_status = MPI_Send(block, 1, *MPI_BLOCK, new_rank, TAG_NEW_BLOCK, MPI_COMM_WORLD);
 
     if(send_return_status != MPI_SUCCESS) {
       printf("[%d] send to node %d failed with error code %d \n",mpi_rank, new_rank, send_return_status);
     }
   }
+}
+
+void print_block(const Block *block){
+  cout << "--------------------" << endl;
+  cout << "Block number: " << block->index << endl;
+  cout << "Owner: " << block->node_owner_number << endl;
+  cout << "Difficulty: " << block->difficulty << endl;
+  cout << "Created at: " << block->created_at << endl;
+  cout << "Nonce: " << (string)block->nonce << endl;
+  cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
+  cout << "Block hash: " << (string)block->block_hash << endl;
+  cout << "--------------------" << endl;
 }
 
 //Proof of work
@@ -230,6 +245,8 @@ int node(){
       if(status.MPI_TAG==TAG_NEW_BLOCK){
         printf("[%u] validate_block_for_chain \n", mpi_rank);
         // validate_block_for_chain con el bloque recibido y el estado de MPI
+        /*printf("[%u] Recibí bloque \n", mpi_rank);
+        print_block(&buffer);*/
         validate_block_for_chain(&buffer,&status);
       
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
