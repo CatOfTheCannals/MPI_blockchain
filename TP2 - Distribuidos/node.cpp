@@ -102,15 +102,16 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
 
 void send_block_to_everyone(const Block *block){
+  int new_rank;
 
-  for(int i = 0; i < total_nodes; i++){
+  for(int i = 1; i < total_nodes; i++){
   
-    if(i == mpi_rank) continue;
+    new_rank = (mpi_rank + i) % total_nodes;
 
-    int send_return_status = MPI_Send(&block, 1, *MPI_BLOCK, i, TAG_NEW_BLOCK, MPI_COMM_WORLD);
+    int send_return_status = MPI_Send(&block, 1, *MPI_BLOCK, new_rank, TAG_NEW_BLOCK, MPI_COMM_WORLD);
 
     if(send_return_status != MPI_SUCCESS) {
-      printf("[%d] send to node %d failed with error code %d \n",mpi_rank, i, send_return_status);
+      printf("[%d] send to node %d failed with error code %d \n",mpi_rank, new_rank, send_return_status);
     }
   }
 }
