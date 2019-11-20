@@ -1,15 +1,31 @@
-mpirun --oversubscribe -np 2 ./blockchain
 [MPI] Lanzando proceso 0
 [MPI] Lanzando proceso 1
-[1]: about to broadcast.
-[0] validate_block_for_chain 
-[1]: broadcast done.
-[0] Agregado a la lista bloque con index 1 enviado por 1 
-[1]: about to broadcast.
-[0] validate_block_for_chain 
-[1]: broadcast done.
-[0] Conflicto suave: Conflicto de branch (2) contra 1 
-[0]: about to broadcast.
+[0] Agregué un producido con index 1 
+[0]: total nodes 2.
+[0]: sending to 1.
+[1]: tomo mutex.[0]: sent to 1.
+
+[1]: tomé mutex.
 [1] validate_block_for_chain 
-[1] Conflicto suave: Descarto el bloque (1 vs 2) contra 0 
-Makefile:24: recipe for target 'run' failed
+[1] Agregado a la lista bloque con index 1 enviado por 0 
+[1]: largué mutex.
+[0] Agregué un producido con index 2 
+[0]: total nodes 2.
+[0]: sending to 1.
+[1]: tomo mutex.[0]: sent to 1.
+
+[1]: tomé mutex.
+[1] validate_block_for_chain 
+[1] Conflicto suave: Conflicto de branch (2) contra 0 
+[1]: largué mutex.
+[1] Agregué un producido con index 3 
+[1]: total nodes 2.
+[1]: sending to 0.
+[0]: tomo mutex.[1]: sent to 0.
+
+[0]: tomé mutex.
+[0] validate_block_for_chain 
+[0] Perdí la carrera por uno (3) contra 1 
+[1]: tomo mutex.
+[1]: tomé mutex.
+[1] TAG_CHAIN_HASH 
