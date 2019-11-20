@@ -1,0 +1,48 @@
+[MPI] Lanzando proceso 0
+[MPI] Lanzando proceso 1
+[0] Agregué un producido con index 1 
+[0]: total nodes 2.
+[0]: sending to 1.
+[1]: tomo mutex.
+[0]: sent to 1.[1]: tomé mutex.
+
+[1] validate_block_for_chain 
+[1] Agregado a la lista bloque con index 1 enviado por 0 
+[1]: largué mutex.
+[0] Agregué un producido con index 2 
+[0]: total nodes 2.
+[0]: sending to 1.
+[1]: tomo mutex.[0]: sent to 1.
+
+[1]: tomé mutex.
+[1] validate_block_for_chain 
+[1] Conflicto suave: Conflicto de branch (2) contra 0 
+[1]: largué mutex.
+[0] Agregué un producido con index 3 
+[0]: total nodes 2.
+[0]: sending to 1.
+[1]: tomo mutex.
+[0]: sent to 1.[1]: tomé mutex.
+[1] validate_block_for_chain 
+
+[1] Conflicto suave: Conflicto de branch (3) contra 0 
+[1]: largué mutex.
+[1] Agregué un producido con index 4 
+[1]: total nodes 2.
+[1]: sending to 0.
+[0]: tomo mutex.
+[1]: sent to 0.[0]: tomé mutex.
+[0] validate_block_for_chain 
+
+[0] Perdí la carrera por uno (4) contra 1 
+[1]: tomo mutex.
+[1]: tomé mutex.
+[1] TAG_CHAIN_HASH 
+[1]: estoy agregando el bloque 0 de 2 y el anterior tiene hash 00013da97eb1d13b959005b7950717314d111d5c1c0a45c3f2b2c31806ecc878
+[1]: sigo  
+[1]: estoy agregando el bloque 1 de 2 y el anterior tiene hash 00013926df47f58296da3ad69ac40898560f24a70c3d63a08d341bd8afd262a1
+[1]: sigo  
+[1]: estoy agregando el bloque 2 de 2 y el anterior tiene hash 0000a73ef79acf373b105acfca03034d7237b5ac144272679dc8efebe8fa99ce
+[1]: sigo  
+[1]: estoy agregando el bloque 3 de 2 y el anterior tiene hash 
+[1]: sigo  
