@@ -200,7 +200,7 @@ void* proof_of_work(void *ptr){
     return NULL;
 }
 
-int send_blockchain(Block &buffer, const MPI_Status *status){
+int send_blockchain(Block buffer, const MPI_Status *status){
 
   // asume VALIDATION_BLOCKS > 0
   // Defino la cadena a enviar => Voy a llenarla con:
