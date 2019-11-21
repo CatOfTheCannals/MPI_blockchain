@@ -176,15 +176,15 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 }
 
 void print_block(const Block *block){
-  //cout << "--------------------" << endl;
-  //cout << "Block number: " << block->index << endl;
-  //cout << "Owner: " << block->node_owner_number << endl;
-  //cout << "Difficulty: " << block->difficulty << endl;
-  //cout << "Created at: " << block->created_at << endl;
-  //cout << "Nonce: " << (string)block->nonce << endl;
-  //cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
-  //cout << "Block hash: " << (string)block->block_hash << endl;
-  //cout << "--------------------" << endl;
+  cout << "--------------------" << endl;
+  cout << "Block number: " << block->index << endl;
+  cout << "Owner: " << block->node_owner_number << endl;
+  cout << "Difficulty: " << block->difficulty << endl;
+  cout << "Created at: " << block->created_at << endl;
+  cout << "Nonce: " << (string)block->nonce << endl;
+  cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
+  cout << "Block hash: " << (string)block->block_hash << endl;
+  cout << "--------------------" << endl;
 }
 
 void send_block_to_everyone(const Block block){
@@ -270,7 +270,7 @@ void* proof_of_work(void *ptr){
     return NULL;
 }
 
-int send_blockchain(Block &buffer, const MPI_Status *status){
+int send_blockchain(Block buffer, const MPI_Status *status){
 
   // asume VALIDATION_BLOCKS > 0
   // Defino la cadena a enviar => Voy a llenarla con:
@@ -282,7 +282,7 @@ int send_blockchain(Block &buffer, const MPI_Status *status){
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     blockchain[i] = buffer;
     cout << "[" + to_string(mpi_rank) + "]: estoy agregando el bloque " + to_string(i) + " de " + to_string(total_nodes) + " y el anterior tiene hash " + (string)buffer.previous_block_hash << endl;
-    if(buffer.previous_block_hash == 0){
+    if(buffer.previous_block_hash == 0 ||(string(buffer.previous_block_hash).size()==0)){
       cout << "[" + to_string(mpi_rank) + "]: salgo" << endl;
       break;
     }
