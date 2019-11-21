@@ -15,6 +15,8 @@ using namespace std;
 int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
 map<string,Block> node_blocks;
+unsigned int mined_blocks = 0;
+
 
 pthread_mutex_t _sendMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -45,6 +47,32 @@ bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
     current_block_from_list = &node_blocks_map.at(prev_block_hash);
   }
   return good_indexes;
+}
+
+bool check_first(const Block *blockchain, const Block *rBlock){
+  string hash_hex_str;
+  block_to_hash(&blockchain[0],hash_hex_str);
+  return ((blockchain[0].index == rBlock->index) && (string(blockchain[0].block_hash).compare(rBlock->block_hash) == 0) && (string(blockchain[0].block_hash).compare(hash_hex_str) == 0));
+}
+
+bool check_chain(const Block *blockchain){
+  bool check = true;
+  for (int i = 0; i < VALIDATION_BLOCKS; ++i){
+    if(((string)blockchain[i].previous_block_hash).empty()) break;
+    check = ((blockchain[i].previous_block_hash == blockchain[i+1].block_hash) && (blockchain[i].index + 1 == blockchain[i+1].index) && check);
+  }
+  return check;
+}
+
+// 1) Si devuelve -2 entonces llegó al primero 
+// 2) Si devuelve -1 no encontró nada |
+// 3) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía, devuelve el índice en blockchain
+int find_block(const Block *blockchain){
+  for (int i = 0; i < VALIDATION_BLOCKS; ++i){
+    if(node_blocks.find(((string)blockchain[i].block_hash)) != node_blocks.end()) return i;
+    if(blockchain[i].index == 1) return -2;
+  }
+  return -1;
 }
 
 //Cuando me llega una cadena adelantada, y tengo que pedir los nodos que me faltan
@@ -279,7 +307,6 @@ void* proof_of_work(void *ptr){
 
     string hash_hex_str;
     Block block;
-    unsigned int mined_blocks = 0;
     while(true){
 
       block = *last_block_in_chain;
@@ -343,7 +370,7 @@ int send_blockchain(Block buffer, const MPI_Status *status){
   Block *blockchain = new Block[VALIDATION_BLOCKS];
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     blockchain[i] = buffer;
-    cout << "[" + to_string(mpi_rank) + "]: estoy agregando el bloque " + to_string(i) + " de " + to_string(total_nodes) + " y el anterior tiene hash " + (string)buffer.previous_block_hash << endl;
+    cout << "[" + to_string(mpi_rank) + "]: estoy agregando el bloque " + to_string(i) + " de " + to_string(mined_blocks) + " y el anterior tiene hash " + (string)buffer.previous_block_hash << endl;
     if(buffer.previous_block_hash == 0 ||(string(buffer.previous_block_hash).size()==0)){
       cout << "[" + to_string(mpi_rank) + "]: salgo" << endl;
       break;
