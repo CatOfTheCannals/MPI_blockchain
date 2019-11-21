@@ -67,7 +67,7 @@ bool check_chain(const Block *blockchain){
 
 // 1) Si devuelve -1 no encontró nada 
 // 2) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía o llegó al bloque con index 1, devuelve la posición en blockchain
-int find_block(const Block *blockchain){
+int find_block(const Block *blockchain, const map<string,Block> &node_blocks){
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     if((node_blocks.find(((string)blockchain[i].block_hash)) != node_blocks.end()) || (blockchain[i].index == 1)) return i;
   }
@@ -89,40 +89,16 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   MPI_Status statusRes;
   MPI_Recv(received_blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
 
-  // calcular offset, que tanto mas larga es la cadena que me mandaron?
-  int offset = received_blockchain[0].index - last_block_in_chain->index;
-
-  bool received_blockchain_checks = check_first(received_blockchain, rBlock) && check_chain(received_blockchain)
+  bool received_blockchain_checks = check_first(received_blockchain, rBlock) && check_chain(received_blockchain);
 
   // 1) Si devuelve 0 no encontró nada 
   // 2) Si devuelve 1 entonces llegó al primero 
-  int find_block(const Block *blockchain){
+  int i = find_block(received_blockchain, node_blocks);
   
-  if(!invalid) {
+  if(received_blockchain_checks && -1 < i) {
 
     printf("[%d] NOT INVALID J3J3J3\n", mpi_rank);
 
-    // deleteo lo que tengo que descartar de mi cadena
-    Block * current_block_from_list = last_block_in_chain;
-    int qty_blocks_to_delete = i - offset;
-    for(int k = 0; k < qty_blocks_to_delete; k++){
-      // copy hash as key
-      string map_entry_to_delete = string(current_block_from_list->block_hash);
-
-      if(map_entry_to_delete.empty()) break;
-
-      cout << "map_entry_to_delete: " << map_entry_to_delete << endl;
-
-      // erase map entry
-      node_blocks.erase(map_entry_to_delete);
-
-      // get next elem
-      string prev_block_hash = current_block_from_list->previous_block_hash;
-
-      if(prev_block_hash.empty()) break;
-        
-      current_block_from_list = &node_blocks.at(prev_block_hash);
-    }
     // seteo nuevo last elements
     last_block_in_chain = &received_blockchain[0];
     
