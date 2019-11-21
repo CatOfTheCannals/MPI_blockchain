@@ -59,7 +59,8 @@ bool check_chain(const Block *blockchain){
   bool check = true;
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     if(((string)blockchain[i].previous_block_hash).empty()) break;
-    check = ((blockchain[i].previous_block_hash == blockchain[i+1].block_hash) && (blockchain[i].index + 1 == blockchain[i+1].index) && check);
+    check = ((blockchain[i].previous_block_hash == blockchain[i+1].block_hash) 
+      && (blockchain[i].index + 1 == blockchain[i+1].index) && check);
   }
   return check;
 }
@@ -91,61 +92,11 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   // calcular offset, que tanto mas larga es la cadena que me mandaron?
   int offset = received_blockchain[0].index - last_block_in_chain->index;
 
-  // recorrer cadena recibida
-  bool invalid = false;
-  int i;
+  bool received_blockchain_checks = check_first(received_blockchain, rBlock) && check_chain(received_blockchain)
 
-  // El primer bloque de la lista contiene el hash pedido y el mismo index que el bloque original?
-  if(rBlock->index == received_blockchain[0].index 
-    && string(received_blockchain[0].block_hash).compare(rBlock->block_hash) == 0){
-    
-    // El hash del bloque recibido es igual al calculado por la función block_to_hash.
-    string hash_hex_str;
-    block_to_hash(&received_blockchain[0],hash_hex_str);
-
-    if(string(received_blockchain[0].block_hash).compare(hash_hex_str) == 0) {
-
-      Block * current_block_from_list = last_block_in_chain;
-      printf("[%d] start iterating received_blockchain from offset index %d \n", mpi_rank, offset);
-      for (i = offset; i < VALIDATION_BLOCKS; ++i){
-
-        Block current_received_block = received_blockchain[i];
-        if(current_received_block.previous_block_hash == 0){
-          printf("[%d] reached end of received_blockchain \n", mpi_rank);
-          break;
-        }
-
-        Block previous_block = received_blockchain[i+1];
-        
-        // Cada bloque siguiente de la lista, contiene el hash definido en previous_block_hash del actual elemento.
-        // Cada bloque siguiente de la lista, contiene el índice anterior al actual elemento.
-        if(string(current_received_block.previous_block_hash).compare(previous_block.block_hash) == 0
-            && current_received_block.index - 1 == previous_block.index){
-          
-          if(string(current_block_from_list->block_hash).compare(string(current_received_block.block_hash)) == 0) {
-            
-            printf("[%d] found common node \n", mpi_rank);
-            break; 
-          } else {
-            
-            string prev_block_hash = current_block_from_list->previous_block_hash;
-            if(prev_block_hash.empty()){
-              printf("[%d] lists totally different \n", mpi_rank);
-              break;}
-
-            current_block_from_list = &node_blocks.at(prev_block_hash);
-          }
-          
-        } else {
-          invalid = true;
-        }
-      }
-    } else {
-      invalid = true;
-    }
-  } else {
-    invalid = true;
-  }
+  // 1) Si devuelve 0 no encontró nada 
+  // 2) Si devuelve 1 entonces llegó al primero 
+  int find_block(const Block *blockchain){
   
   if(!invalid) {
 
