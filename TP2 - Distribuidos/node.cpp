@@ -89,11 +89,25 @@ bool check_chain(const Block *blockchain){
   return check;
 }
 
+bool equal(Block block1, Block block2){
+  return ((block1.index == block2.index) && (block1.node_owner_number == block2.node_owner_number) && (block1.difficulty == block2.difficulty) && (block1.created_at == block2.created_at) && !((string)block1.nonce).compare((string)block2.nonce) && !((string)block1.previous_block_hash).compare((string)block2.previous_block_hash) && !((string)block1.block_hash).compare((string)block2.block_hash));
+}
+
+bool look_for_block(Block block){
+  Block current = *last_block_in_chain;
+  while(true){
+    if(equal(current, block)) return true;
+    if(((string)current.previous_block_hash).empty()) break;
+    current = node_blocks.at(((string)current.previous_block_hash));
+  }
+  return false;
+}
+
 // 1) Si devuelve -1 no encontró nada 
 // 2) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía o llegó al bloque con index 1, devuelve la posición en blockchain
 int find_block(const Block *blockchain, const map<string,Block> &node_blocks){
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
-    if((node_blocks.find(((string)blockchain[i].block_hash)) != node_blocks.end()) || (blockchain[i].index == 1)) return i;
+    if(look_for_block(blockchain[i]) || (blockchain[i].index == 1)) return i;
   }
   return -1;
 }
@@ -122,22 +136,26 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   cout << "[" + to_string(mpi_rank) + "]: find = " + to_string(i) + " | received_blockchain_checks = " + to_string(received_blockchain_checks) << endl;
 
   if(received_blockchain_checks && -1 < i) {
-
-    printf("[%d] NOT INVALID J3J3J3\n", mpi_rank);
-
     
 
     log_chain();
 
+
+
+
+
+
     // BORRAR ESTE WHILE (1) 
-     while(1){}
+     while(1){
+      cout << "[" + to_string(mpi_rank) + "]: estoy trabado " << endl;
+     }
 
 
 
 
 
     // seteo nuevo last elements
-    last_block_in_chain = &received_blockchain[0];
+    *last_block_in_chain = received_blockchain[0];
     
     // agrego las entradas de la nueva cadena
     cout << "agrego nuevas entradas" << endl;

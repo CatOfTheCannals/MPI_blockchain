@@ -1,0 +1,490 @@
+mpirun --oversubscribe -np 10 ./blockchain
+[MPI] Lanzando proceso 0
+[MPI] Lanzando proceso 2
+[MPI] Lanzando proceso 3
+[MPI] Lanzando proceso 9
+[MPI] Lanzando proceso 1
+[MPI] Lanzando proceso 7
+[MPI] Lanzando proceso 6
+[2] Agregué un producido con index 1 
+[2]: total nodes 10.[MPI] Lanzando proceso 5
+
+[2]: sending to 3.
+[3] validate_block_for_chain 
+[3] Block is valid 
+[2]: sent to 3.
+[2]: sending to 4.
+[MPI] Lanzando proceso 4
+[4] validate_block_for_chain 
+[4] Block is valid 
+[2]: sent to 4.
+[2]: sending to 5.
+[MPI] Lanzando proceso 8
+[5] validate_block_for_chain 
+[2]: sent to 5.
+[6] validate_block_for_chain 
+[5] Block is valid 
+[2]: sending to 6.
+[6] Block is valid 
+[0] Agregué un producido con index 1 
+[2]: sent to 6.
+[2]: sending to 7.
+[7] validate_block_for_chain 
+[2]: sent to 7.
+[2]: sending to 8.
+[7] Block is valid 
+[8] validate_block_for_chain 
+[8] Block is valid 
+[2]: sent to 8.
+[2]: sending to 9.
+[9] validate_block_for_chain 
+[9] Block is valid 
+[2]: sent to 9.
+[2]: sending to 0.
+[1] Agregué un producido con index 1 
+[1]: total nodes 10.
+[1]: sending to 2.
+[6] Agregado a la lista bloque con index 1 enviado por 2 
+[1]: sent to 2.
+[1]: sending to 3.
+[0]: total nodes 10.
+[0]: sending to 1.
+[3] Agregado a la lista bloque con index 1 enviado por 2 
+[3] validate_block_for_chain 
+[2]: sent to 0.[3] Block is valid 
+
+[2]: sending to 1.[6] Agregué un producido con index 2 
+[6]: total nodes 10.
+[6]: sending to 7.
+
+[1]: sent to 3.[5] Agregado a la lista bloque con index 1 enviado por 2 
+
+[1]: sending to 4.
+[2]: sent to 1.
+[0]: sent to 1.
+[0]: sending to 2.
+[2] Agregué un producido con index 2 
+[2]: total nodes 10.
+[2]: sending to 3.
+[0]: sent to 2.
+[0]: sending to 3.
+[5] Agregué un producido con index 2 
+[5]: total nodes 10.
+[5]: sending to 6.
+[5]: sent to 6.
+[5]: sending to 7.
+[4] Agregado a la lista bloque con index 1 enviado por 2 
+[1]: sent to 4.[4] validate_block_for_chain 
+
+[1]: sending to 5.[4] Block is valid 
+
+[1]: sent to 5.
+[1]: sending to 6.
+[1]: sent to 6.
+[1]: sending to 7.
+[9] Agregado a la lista bloque con index 1 enviado por 2 
+[9] Agregué un producido con index 2 
+[9]: total nodes 10.
+[9]: sending to 0.
+[9]: sent to 0.
+[9]: sending to 1.
+[8] Agregado a la lista bloque con index 1 enviado por 2 
+[8] Agregué un producido con index 2 
+[8]: total nodes 10.
+[8]: sending to 9.
+[9]: sent to 1.[8]: sent to 9.
+[8]: sending to 0.
+
+[8]: sent to 0.
+[8]: sending to 1.
+[9]: sending to 2.
+[8]: sent to 1.
+[8]: sending to 2.
+[8]: sent to 2.
+[8]: sending to 3.
+[9]: sent to 2.
+[9]: sending to 3.
+[3] Conflicto suave: Conflicto de branch (1) contra 1 
+[0]: sent to 3.[2]: sent to 3.
+[2]: sending to 4.
+[3] validate_block_for_chain 
+
+[3] Block is valid 
+[0]: sending to 4.
+[8]: sent to 3.
+[8]: sending to 4.
+[9]: sent to 3.
+[9]: sending to 4.
+[4] Conflicto suave: Conflicto de branch (1) contra 1 
+[2]: sent to 4.
+[2]: sending to 5.
+[4] validate_block_for_chain 
+[0]: sent to 4.[4] Block is valid 
+[9]: sent to 4.
+[9]: sending to 5.
+
+[0]: sending to 5.
+[2]: sent to 5.
+[2]: sending to 6.
+[2]: sent to 6.
+[2]: sending to 7.
+[9]: sent to 5.
+[9]: sending to 6.
+[9]: sent to 6.
+[9]: sending to 7.
+[8]: sent to 4.
+[8]: sending to 5.
+[8]: sent to 5.
+[8]: sending to 6.
+[8]: sent to 6.
+[8]: sending to 7.
+[1]: sent to 7.
+[1]: sending to 8.
+[6]: sent to 7.
+[6]: sending to 8.
+[5]: sent to 7.
+[5]: sending to 8.
+[7] Agregado a la lista bloque con index 1 enviado por 2 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2]: sent to 7.
+[2]: sending to 8.
+[3] Conflicto suave: Conflicto de branch (2) contra 2 
+[3] validate_block_for_chain 
+[3] Block is valid 
+[0]: sent to 5.
+[0]: sending to 6.
+[9]: sent to 7.
+[9]: sending to 8.
+[4] Conflicto suave: Conflicto de branch (2) contra 2 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[5]: sent to 8.
+[5]: sending to 9.
+[6]: sent to 8.
+[6]: sending to 9.
+[9]: sent to 8.[0]: sent to 6.
+[0]: sending to 7.
+
+[9] validate_block_for_chain 
+[9] Block is valid 
+[1]: sent to 8.
+[1]: sending to 9.
+[2]: sent to 8.
+[2]: sending to 9.
+[8]: sent to 7.
+[8] Agregué un producido con index 2 
+[8]: total nodes 10.
+[8]: sending to 9.
+[3] Conflicto suave: Conflicto de branch (2) contra 8 
+[3] Agregué un producido con index 2 
+[3]: total nodes 10.
+[3]: sending to 4.
+[9] Conflicto suave: Conflicto de branch (2) contra 8 
+[5]: sent to 9.
+[9] validate_block_for_chain 
+[1]: sent to 9.
+[1]: sending to 0.[6]: sent to 9.
+[6]: sending to 0.
+[9] Block is valid 
+[8]: sent to 9.
+[8]: sending to 0.
+[5]: sending to 0.
+
+[2]: sent to 9.[6]: sent to 0.
+[8]: sent to 0.
+[8]: sending to 1.[6]: sending to 1.
+
+
+[5]: sent to 0.
+[5]: sending to 1.
+[8]: sent to 1.
+[8]: sending to 2.
+[2]: sending to 0.[6]: sent to 1.
+[6]: sending to 2.
+[1]: sent to 0.
+[1] validate_block_for_chain 
+[5]: sent to 1.
+[5]: sending to 2.
+
+[8]: sent to 2.
+[8]: sending to 3.
+[1] Block is valid 
+[8]: sent to 3.
+[8]: sending to 4.
+[6]: sent to 2.
+[6]: sending to 3.
+[5]: sent to 2.
+[5]: sending to 3.
+[5]: sent to 3.
+[5]: sending to 4.
+[6]: sent to 3.
+[6]: sending to 4.
+[2]: sent to 0.
+[2]: sending to 1.
+[4] Conflicto suave: Conflicto de branch (2) contra 8 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 6 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[9] Conflicto suave: Conflicto de branch (2) contra 5 
+[9] validate_block_for_chain 
+[9] Block is valid 
+[1] Conflicto suave: Conflicto de branch (1) contra 0 
+[1] validate_block_for_chain 
+[1] Block is valid 
+[4] Conflicto suave: Conflicto de branch (2) contra 9 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[9] Conflicto suave: Conflicto de branch (1) contra 1 
+[9] validate_block_for_chain 
+[9] Block is valid 
+[7] Conflicto suave: Conflicto de branch (1) contra 1 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[4] Conflicto suave: Conflicto de branch (1) contra 0 
+[3]: sent to 4.
+[3]: sending to 5.
+[4] validate_block_for_chain 
+[5]: sent to 4.
+[5] validate_block_for_chain 
+[4] Block is valid 
+[5] Block is valid 
+[8]: sent to 4.[6]: sent to 4.
+[6]: sending to 5.
+[3]: sent to 5.
+[3]: sending to 6.
+[3]: sent to 6.
+[3]: sending to 7.
+
+[8]: sending to 5.
+[1] Conflicto suave: Conflicto de branch (1) contra 2 
+[1] validate_block_for_chain 
+[1] Block is valid 
+[9] Conflicto suave: Conflicto de branch (2) contra 2 
+[9] validate_block_for_chain 
+[9] Block is valid 
+[5] Conflicto suave: Conflicto de branch (1) contra 1 
+[5] Agregué un producido con index 2 
+[5]: total nodes 10.
+[5]: sending to 6.
+[8]: sent to 5.
+[8]: sending to 6.
+[7] Conflicto suave: Conflicto de branch (2) contra 2 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[6]: sent to 5.
+[6] validate_block_for_chain 
+[8]: sent to 6.
+[8]: sending to 7.
+[6] Block is valid 
+[5]: sent to 6.
+[5]: sending to 7.
+[6] Conflicto suave: Conflicto de branch (2) contra 5 
+[6] validate_block_for_chain 
+[6] Block is valid 
+[1] Perdí la carrera por uno (2) contra 5 
+[1] verificar_y_migrar_cadena
+[2]: sent to 1.
+[2] validate_block_for_chain 
+[2] Block is valid 
+[4] Conflicto suave: Conflicto de branch (2) contra 3 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[9] Conflicto suave: Conflicto de branch (2) contra 6 
+[9] validate_block_for_chain 
+[9] Block is valid 
+[2] Conflicto suave: Descarto el bloque (1 vs 2) contra 1 
+[2] validate_block_for_chain 
+[2] Block is valid 
+[9] Conflicto suave: Conflicto de branch (2) contra 8 
+[9] Agregué un producido con index 3 
+[9]: total nodes 10.
+[9]: sending to 0.
+[9]: sent to 0.
+[9]: sending to 1.
+[9]: sent to 1.
+[9]: sending to 2.
+[7] Conflicto suave: Conflicto de branch (2) contra 5 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[6] Conflicto suave: Conflicto de branch (1) contra 1 
+[6] Agregué un producido con index 2 
+[6]: total nodes 10.
+[6]: sending to 7.
+[4] Conflicto suave: Conflicto de branch (2) contra 5 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 8 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2] Conflicto suave: Conflicto de branch (2) contra 5 
+[2] validate_block_for_chain 
+[2] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 9 
+[5]: sent to 7.
+[5]: sending to 8.
+[3]: sent to 7.
+[3]: sending to 8.
+[7] validate_block_for_chain 
+[6]: sent to 7.
+[6]: sending to 8.
+[8]: sent to 7.
+[8] validate_block_for_chain 
+[8] Block is valid 
+[5]: sent to 8.
+[5]: sending to 9.
+[6]: sent to 8.
+[6]: sending to 9.
+[6]: sent to 9.
+[6]: sending to 0.
+[7] Block is valid 
+[5]: sent to 9.
+[5]: sending to 0.
+[6]: sent to 0.
+[6]: sending to 1.
+[6]: sent to 1.
+[6]: sending to 2.
+[5]: sent to 0.
+[5]: sending to 1.
+[5]: sent to 1.
+[5]: sending to 2.
+[4] Conflicto suave: Conflicto de branch (2) contra 6 
+[4] validate_block_for_chain 
+[4] Block is valid 
+[0]: sent to 7.
+[0]: sending to 8.
+[3]: sent to 8.
+[3]: sending to 9.
+[3]: sent to 9.
+[3]: sending to 0.
+[3]: sent to 0.
+[3]: sending to 1.
+[4] Conflicto suave: Conflicto de branch (2) contra 8 
+[4] Agregué un producido con index 3 
+[4]: total nodes 10.
+[4]: sending to 5.
+[4]: sent to 5.
+[4]: sending to 6.
+[4]: sent to 6.
+[4]: sending to 7.
+[3]: sent to 1.
+[3]: sending to 2.
+[2] Conflicto suave: Conflicto de branch (2) contra 6 
+[2] validate_block_for_chain 
+[2] Block is valid 
+[7] Conflicto suave: Conflicto de branch (1) contra 0 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2] Conflicto suave: Conflicto de branch (2) contra 8 
+[2] validate_block_for_chain 
+[2] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 3 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 5 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2] Conflicto suave: Conflicto de branch (2) contra 9 
+[2] validate_block_for_chain 
+[2] Block is valid 
+[7] Conflicto suave: Conflicto de branch (2) contra 6 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2] Conflicto suave: Descarto el bloque (1 vs 2) contra 0 
+[2] Agregué un producido con index 3 
+[2]: total nodes 10.
+[2]: sending to 3.
+[3]: sent to 2.
+[2]: sent to 3.
+[2]: sending to 4.
+[9]: sent to 2.
+[2]: sent to 4.
+[2]: sending to 5.
+[6]: sent to 2.[9]: sending to 3.
+
+[3] validate_block_for_chain 
+[6]: sending to 3.[3] Block is valid 
+
+[5]: sent to 2.[2]: sent to 5.
+[2]: sending to 6.
+[2]: sent to 6.
+[2]: sending to 7.
+
+[5]: sending to 3.
+[7] Conflicto suave: Conflicto de branch (2) contra 8 
+[4]: sent to 7.
+[4]: sending to 8.
+[7] validate_block_for_chain 
+[7] Block is valid 
+[2]: sent to 7.
+[2]: sending to 8.
+[3] Conflicto suave: Conflicto de branch (2) contra 9 
+[3] validate_block_for_chain 
+[3] Block is valid 
+[7] Conflicto suave: Conflicto de branch (3) contra 4 
+[7] validate_block_for_chain 
+[7] Block is valid 
+[3] Conflicto suave: Conflicto de branch (1) contra 0 
+[3] validate_block_for_chain 
+[3] Block is valid 
+[7] Conflicto suave: Conflicto de branch (3) contra 2 
+[7] Agregué un producido con index 4 
+[7]: total nodes 10.
+[7]: sending to 8.
+[3] Conflicto suave: Conflicto de branch (3) contra 2 
+[3] validate_block_for_chain 
+[3] Block is valid 
+[3] Conflicto suave: Conflicto de branch (2) contra 5 
+[3] validate_block_for_chain 
+[3] Block is valid 
+[9]: sent to 3.
+[9]: sending to 4.
+[9]: sent to 4.
+[9]: sending to 5.
+[9]: sent to 5.
+[9]: sending to 6.
+[9]: sent to 6.
+[9]: sending to 7.
+[9]: sent to 7.
+[9]: sending to 8.
+[6]: sent to 3.
+[6]: sending to 4.
+[6]: sent to 4.
+[6]: sending to 5.
+[6]: sent to 5.
+[6] validate_block_for_chain 
+[6] Block is valid 
+[6] Conflicto suave: Conflicto de branch (2) contra 2 
+[6] Agregué un producido con index 3 
+[6]: total nodes 10.
+[6]: sending to 7.
+[6]: sent to 7.
+[6]: sending to 8.
+[5]: sent to 3.
+[5]: sending to 4.
+[5]: sent to 4.
+[5] validate_block_for_chain 
+[5] Block is valid 
+[5] Conflicto suave: Conflicto de branch (2) contra 2 
+[5] Agregué un producido con index 2 
+[5]: total nodes 10.
+[5]: sending to 6.
+[5]: sent to 6.
+[5]: sending to 7.
+[5]: sent to 7.
+[5]: sending to 8.
+[3] Conflicto suave: Conflicto de branch (2) contra 6 
+[3] Agregué un producido con index 3 
+[3]: total nodes 10.
+[3]: sending to 4.
+[3]: sent to 4.
+[3]: sending to 5.
+[3]: sent to 5.
+[3]: sending to 6.
+[3]: sent to 6.
+[3]: sending to 7.
+[3]: sent to 7.
+[3]: sending to 8.
+Makefile:24: recipe for target 'run' failed

@@ -1,0 +1,19 @@
+Mi blockchain es la siguiente
+--------------------
+Block number: 3
+Owner: 4
+Previous block hash: 00fcb94e3cee573a1643b37ab563bda30a5e3f2d074237b5307e680145e1ff01
+Block hash: 0011129a35c6ef3909bd66a5f108b7bfbee65f03597059f2c2394433008e354c
+--------------------
+--------------------
+Block number: 2
+Owner: 8
+Previous block hash: 0031a43f418722f316a70c5f632481aab21c63d32814dd0b41cc47c666fd1031
+Block hash: 00fcb94e3cee573a1643b37ab563bda30a5e3f2d074237b5307e680145e1ff01
+--------------------
+--------------------
+Block number: 1
+Owner: 4
+Previous block hash: 
+Block hash: 0031a43f418722f316a70c5f632481aab21c63d32814dd0b41cc47c666fd1031
+--------------------
