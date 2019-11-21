@@ -193,7 +193,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //el siguiente a mí último bloque actual,
     //y el bloque anterior apuntado por el recibido es mí último actual,
     //entonces lo agrego como nuevo último.
-    if((rBlock->index==(last_block_in_chain->index)+1) && (rBlock->previous_block_hash==last_block_in_chain->block_hash)){
+    if((rBlock->index==(last_block_in_chain->index)+1) && !((string)rBlock->previous_block_hash).compare((string)last_block_in_chain->block_hash)){
       last_block_in_chain=(Block *) rBlock;
       printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
       mined_blocks += 1;
@@ -204,7 +204,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //el siguiente a mí último bloque actual,
     //pero el bloque anterior apuntado por el recibido no es mí último actual,
     //entonces hay una blockchain más larga que la mía.
-    if((rBlock->index==(last_block_in_chain->index)+1) && (rBlock->previous_block_hash!=last_block_in_chain->block_hash)){
+    if((rBlock->index==(last_block_in_chain->index)+1) && ((string)rBlock->previous_block_hash).compare(last_block_in_chain->block_hash)){
       printf("[%d] Perdí la carrera por uno (%d) contra %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
       bool res = verificar_y_migrar_cadena(rBlock,status);
       return res;
