@@ -15,11 +15,43 @@ using namespace std;
 int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
 map<string,Block> node_blocks;
+
 pthread_mutex_t _sendMutex = PTHREAD_MUTEX_INITIALIZER;
+
+void print_block(const Block *block){
+  cout << "--------------------" << endl;
+  cout << "Block number: " << block->index << endl;
+  cout << "Owner: " << block->node_owner_number << endl;
+  cout << "Difficulty: " << block->difficulty << endl;
+  cout << "Created at: " << block->created_at << endl;
+  cout << "Nonce: " << (string)block->nonce << endl;
+  cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
+  cout << "Block hash: " << (string)block->block_hash << endl;
+  cout << "--------------------" << endl;
+}
+
+bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
+  bool good_indexes = true;
+  unsigned int current_index = last_elem->index;
+  Block* current_block_from_list = last_elem;
+
+  while(true) {
+    string prev_block_hash = current_block_from_list->previous_block_hash;
+
+    if(current_index != current_block_from_list->index) good_indexes = false;
+  
+    if( prev_block_hash.empty() ) break;
+  
+    current_block_from_list = &node_blocks_map.at(prev_block_hash);
+  }
+  return good_indexes;
+}
 
 //Cuando me llega una cadena adelantada, y tengo que pedir los nodos que me faltan
 //Si nos separan más de VALIDATION_BLOCKS bloques de distancia entre las cadenas, se descarta por seguridad
 bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
+
+  printf("[%d] verificar_y_migrar_cadena\n", mpi_rank);
 
   //Enviar mensaje TAG_CHAIN_HASH
   MPI_Send(rBlock, 1, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_HASH, MPI_COMM_WORLD);
@@ -30,10 +62,13 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   MPI_Status statusRes;
   MPI_Recv(received_blockchain, VALIDATION_BLOCKS, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_RESPONSE, MPI_COMM_WORLD, &statusRes);
 
+  // calcular offset, que tanto mas larga es la cadena que me mandaron?
+  int offset = received_blockchain[0].index - last_block_in_chain->index;
+
   // recorrer cadena recibida
   bool invalid = false;
   int i;
-  // TODO(cgiudice): el ultimo bloque de la lista esta en el cero?
+
   // El primer bloque de la lista contiene el hash pedido y el mismo index que el bloque original?
   if(rBlock->index == received_blockchain[0].index 
     && string(received_blockchain[0].block_hash).compare(rBlock->block_hash) == 0){
@@ -44,27 +79,37 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
     if(string(received_blockchain[0].block_hash).compare(hash_hex_str) == 0) {
 
-      
-      Block * current_node_from_list = last_block_in_chain;
-      for (i = 0; i < VALIDATION_BLOCKS; ++i){
+      Block * current_block_from_list = last_block_in_chain;
+      printf("[%d] start iterating received_blockchain from offset index %d \n", mpi_rank, offset);
+      for (i = offset; i < VALIDATION_BLOCKS; ++i){
 
         Block current_received_block = received_blockchain[i];
         if(current_received_block.previous_block_hash == 0){
+          printf("[%d] reached end of received_blockchain \n", mpi_rank);
           break;
         }
-        Block previous_block = received_blockchain[i+1];
 
+        Block previous_block = received_blockchain[i+1];
+        
         // Cada bloque siguiente de la lista, contiene el hash definido en previous_block_hash del actual elemento.
         // Cada bloque siguiente de la lista, contiene el índice anterior al actual elemento.
         if(string(current_received_block.previous_block_hash).compare(previous_block.block_hash) == 0
             && current_received_block.index - 1 == previous_block.index){
-
-          if(current_node_from_list->block_hash == current_received_block.block_hash ) { 
-            // found common node 
+          
+          if(string(current_block_from_list->block_hash).compare(string(current_received_block.block_hash)) == 0) {
+            
+            printf("[%d] found common node \n", mpi_rank);
             break; 
           } else {
-            current_node_from_list = &node_blocks.at(current_node_from_list->previous_block_hash);
+            
+            string prev_block_hash = current_block_from_list->previous_block_hash;
+            if(prev_block_hash.empty()){
+              printf("[%d] lists totally different \n", mpi_rank);
+              break;}
+
+            current_block_from_list = &node_blocks.at(prev_block_hash);
           }
+          
         } else {
           invalid = true;
         }
@@ -75,35 +120,61 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   } else {
     invalid = true;
   }
+  
   if(!invalid) {
-    // deleteo lo que tengo que descartar de mi cadena
-    Block * current_node_from_list = last_block_in_chain;
-    while(current_node_from_list->previous_block_hash != 0){
-      // copy hash as key
-      string map_entry_to_delete = string(current_node_from_list->block_hash);
 
-      // get next elem
-      current_node_from_list = &node_blocks.at(current_node_from_list->previous_block_hash);
+    printf("[%d] NOT INVALID J3J3J3\n", mpi_rank);
+
+    // deleteo lo que tengo que descartar de mi cadena
+    Block * current_block_from_list = last_block_in_chain;
+    int qty_blocks_to_delete = i - offset;
+    for(int k = 0; k < qty_blocks_to_delete; k++){
+      // copy hash as key
+      string map_entry_to_delete = string(current_block_from_list->block_hash);
+
+      if(map_entry_to_delete.empty()) break;
+
+      cout << "map_entry_to_delete: " << map_entry_to_delete << endl;
 
       // erase map entry
       node_blocks.erase(map_entry_to_delete);
+
+      // get next elem
+      string prev_block_hash = current_block_from_list->previous_block_hash;
+
+      if(prev_block_hash.empty()) break;
+        
+      current_block_from_list = &node_blocks.at(prev_block_hash);
     }
     // seteo nuevo last elements
     last_block_in_chain = &received_blockchain[0];
-
+    
     // agrego las entradas de la nueva cadena
+    cout << "agrego nuevas entradas" << endl;
     for(int j = 0; j < i; j++){
       Block current_received_block = received_blockchain[j];
 
       // TODO(charli): asegurar que current_received_block se pasa bien por copia
       node_blocks.insert({string(current_received_block.block_hash), current_received_block}); 
 
-      if(current_received_block.previous_block_hash == 0) break;
+      if(string(current_received_block.previous_block_hash).empty()) break;
+    }
+
+    printf("[%d] termine de agregar cadena \n", mpi_rank);
+
+    // TODO(charli): cambiar total_blocks
+
+    if(verify_chain_indexes(last_block_in_chain, node_blocks)){
+      printf("[%d] es valida! \n", mpi_rank);
+    } else {
+      printf("[%d] no es valida D: \n", mpi_rank);
     }
 
     delete []received_blockchain;
     return true;
   }
+
+  printf("[%d] descarte cadena \n", mpi_rank);
 
   delete []received_blockchain;
   return false;
@@ -112,6 +183,8 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 //Verifica que el bloque tenga que ser incluido en la cadena, y lo agrega si corresponde
 bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
   if(valid_new_block(rBlock)){
+
+    printf("[%d] Block is valid \n", mpi_rank);    
 
     //Agrego el bloque al diccionario, aunque no
     //necesariamente eso lo agrega a la cadena
@@ -124,7 +197,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //entonces lo agrego como nuevo último.
     if((rBlock->index==1) && (last_block_in_chain->index==0)){
       last_block_in_chain=(Block *) rBlock;
-      printf("[%d] Agregado a la lista bloque con index %d enviado por %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
+      printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
       return true;
     }
 
@@ -134,7 +207,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //entonces lo agrego como nuevo último.
     if((rBlock->index==(last_block_in_chain->index)+1) && (rBlock->previous_block_hash==last_block_in_chain->block_hash)){
       last_block_in_chain=(Block *) rBlock;
-      printf("[%d] Agregado a la lista bloque con index %d enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
+      printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
       return true;
     }
 
@@ -175,17 +248,6 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
   return false;
 }
 
-void print_block(const Block *block){
-  cout << "--------------------" << endl;
-  cout << "Block number: " << block->index << endl;
-  cout << "Owner: " << block->node_owner_number << endl;
-  cout << "Difficulty: " << block->difficulty << endl;
-  cout << "Created at: " << block->created_at << endl;
-  cout << "Nonce: " << (string)block->nonce << endl;
-  cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
-  cout << "Block hash: " << (string)block->block_hash << endl;
-  cout << "--------------------" << endl;
-}
 
 void send_block_to_everyone(const Block block){
   int new_rank;
@@ -211,7 +273,7 @@ void send_block_to_everyone(const Block block){
 
 
 
-//Proof of work
+//Proof of work 
 //TODO: Advertencia: puede tener condiciones de carrera
 void* proof_of_work(void *ptr){
 
@@ -254,7 +316,7 @@ void* proof_of_work(void *ptr){
             *last_block_in_chain = block;
             strcpy(last_block_in_chain->block_hash, hash_hex_str.c_str());
             node_blocks.insert({hash_hex_str, *last_block_in_chain}); //[hash_hex_str] = *last_block_in_chain;
-            printf("[%d] Agregué un producido con index %d \n",mpi_rank,last_block_in_chain->index);
+            printf("[%d] Agregué un producido con index %u \n",mpi_rank,last_block_in_chain->index);
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
             //cout << "[" + to_string(mpi_rank) + "]: mutex lock." << endl;
