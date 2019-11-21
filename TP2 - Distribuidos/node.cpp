@@ -35,9 +35,12 @@ void print_block(const Block *block){
 
 void log_chain(){
   string filename = to_string((unsigned long) mpi_rank) + ".out";
+  string rm = "rm " + filename;
+  system(rm.c_str());
   fstream outfile;
   outfile.open(filename, fstream::in | fstream::out | fstream::app);
   Block current = *last_block_in_chain;
+  outfile << "Mi blockchain es la siguiente" << endl;
   while(true){
     outfile << "--------------------" << endl;
     outfile << "Block number: " << current.index << endl;
@@ -171,7 +174,9 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
   if(valid_new_block(rBlock)){
 
-    printf("[%d] Block is valid \n", mpi_rank);    
+    printf("[%d] Block is valid \n", mpi_rank); 
+
+    log_chain();   
 
     //Agrego el bloque al diccionario, aunque no
     //necesariamente eso lo agrega a la cadena
