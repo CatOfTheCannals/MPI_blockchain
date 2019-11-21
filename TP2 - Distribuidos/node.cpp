@@ -64,15 +64,13 @@ bool check_chain(const Block *blockchain){
   return check;
 }
 
-// 1) Si devuelve 0 no encontró nada 
-// 2) Si devuelve 1 entonces llegó al primero 
-// 3) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía, devuelve el índice + 2 en blockchain
+// 1) Si devuelve -1 no encontró nada 
+// 2) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía o llegó al bloque con index 1, devuelve la posición en blockchain
 int find_block(const Block *blockchain){
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
-    if(node_blocks.find(((string)blockchain[i].block_hash)) != node_blocks.end()) return i + 2;
-    if(blockchain[i].index == 1) return 1;
+    if((node_blocks.find(((string)blockchain[i].block_hash)) != node_blocks.end()) || (blockchain[i].index == 1)) return i;
   }
-  return 0;
+  return -1;
 }
 
 //Cuando me llega una cadena adelantada, y tengo que pedir los nodos que me faltan
