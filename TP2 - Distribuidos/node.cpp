@@ -9,6 +9,7 @@
 #include <mpi.h>
 #include <map>
 #include <iostream> 
+#include <fstream>
 
 using namespace std;
 
@@ -31,6 +32,26 @@ void print_block(const Block *block){
   cout << "Block hash: " << (string)block->block_hash << endl;
   cout << "--------------------" << endl;
 }
+
+void log_chain(){
+  string filename = to_string((unsigned long) mpi_rank) + ".out";
+  fstream outfile;
+  outfile.open(filename, fstream::in | fstream::out | fstream::app);
+  Block current = *last_block_in_chain;
+  while(true){
+    outfile << "--------------------" << endl;
+    outfile << "Block number: " << current.index << endl;
+    outfile << "Owner: " << current.node_owner_number << endl;
+    outfile << "Previous block hash: " << (string)current.previous_block_hash << endl;
+    outfile << "Block hash: " << (string)current.block_hash << endl;
+    outfile << "--------------------" << endl;
+    if(((string)current.previous_block_hash).empty()) break;
+    current = node_blocks.at(((string)current.previous_block_hash));
+  }
+
+  outfile.close();
+}
+
 
 bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
   bool good_indexes = true;
@@ -101,7 +122,16 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
     printf("[%d] NOT INVALID J3J3J3\n", mpi_rank);
 
-    while(1){}
+    
+
+    log_chain();
+
+    // BORRAR ESTE WHILE (1) 
+     while(1){}
+
+
+
+
 
     // seteo nuevo last elements
     last_block_in_chain = &received_blockchain[0];
@@ -314,6 +344,8 @@ int send_blockchain(Block buffer, const MPI_Status *status){
   if(send_return_status != MPI_SUCCESS) {
     printf("[%d] send to node %d failed with error code %d \n",mpi_rank, rank_of_asking_node, send_return_status);
   }
+
+  log_chain();
 
   delete []blockchain;
 
