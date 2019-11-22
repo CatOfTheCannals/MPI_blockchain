@@ -28,6 +28,9 @@ int main(int argc, char **argv) {
   setbuf(stdout, NULL);
   setbuf(stderr, NULL);
 
+
+  system("rm *.out");
+  
   //Llama a la función que maneja cada nodo
   node();
 

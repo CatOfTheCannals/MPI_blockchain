@@ -10,6 +10,8 @@
 #include <map>
 #include <iostream> 
 #include <fstream>
+#include <assert.h>     /* assert */
+
 
 using namespace std;
 
@@ -33,14 +35,12 @@ void print_block(const Block *block){
   cout << "--------------------" << endl;
 }
 
-void log_chain(){
+void log_chain(string log_info){
   string filename = to_string((unsigned long) mpi_rank) + ".out";
-  string rm = "rm " + filename;
-  system(rm.c_str());
   fstream outfile;
   outfile.open(filename, fstream::in | fstream::out | fstream::app);
   Block current = *last_block_in_chain;
-  outfile << "Mi blockchain es la siguiente" << endl;
+  outfile << "Mi blockchain es la siguiente en " + log_info << endl;
   while(true){
     outfile << "--------------------" << endl;
     outfile << "Block number: " << current.index << endl;
@@ -52,6 +52,16 @@ void log_chain(){
     current = node_blocks.at(((string)current.previous_block_hash));
   }
 
+  outfile.close();
+}
+
+void log_msg(string msg){
+  string filename = to_string((unsigned long) mpi_rank) + ".out";
+  fstream outfile;
+  outfile << "--------------------" << endl;
+  outfile.open(filename, fstream::in | fstream::out | fstream::app);
+  outfile << msg << endl;
+  outfile << "--------------------" << endl;
   outfile.close();
 }
 
@@ -83,6 +93,17 @@ void verify_chain_indexes(string label){
     } else {
       printf("[%d] %s bad indexes \n", mpi_rank, label);
   }
+}
+
+bool sanity_test(){
+  bool everything_ok = true;
+  Block current = *last_block_in_chain;
+  while(true){
+    if(((string)current.previous_block_hash).empty()) break;
+    everything_ok = ((node_blocks.find(((string)  current.previous_block_hash)) != node_blocks.end()) && (current.index - 1 == node_blocks.at(((string)current.previous_block_hash)).index)) && everything_ok;
+    current = node_blocks.at(((string)current.previous_block_hash));
+  }
+  return everything_ok;
 }
 
 bool check_first(const Block *blockchain, const Block *rBlock){
@@ -150,7 +171,7 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
   if(received_blockchain_checks && -1 < i) {
     
 
-    log_chain();
+    log_chain("Migrar");
 
 
 
@@ -198,7 +219,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
     verify_chain_indexes("Block is valid"); 
 
-    log_chain();   
+    log_chain("Validate (entro)");   
 
     //Agrego el bloque al diccionario, aunque no
     //necesariamente eso lo agrega a la cadena
@@ -210,6 +231,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //y mí último bloque actual tiene índice 0,
     //entonces lo agrego como nuevo último.
     if((rBlock->index==1) && (last_block_in_chain->index==0)){
+      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque con index " + to_string(rBlock->index));
       last_block_in_chain=(Block *) rBlock;
       printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
       mined_blocks += 1;
@@ -220,7 +242,9 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //el siguiente a mí último bloque actual,
     //y el bloque anterior apuntado por el recibido es mí último actual,
     //entonces lo agrego como nuevo último.
-    if((rBlock->index==(last_block_in_chain->index)+1) && !((string)rBlock->previous_block_hash).compare((string)last_block_in_chain->block_hash)){
+    if((rBlock->index==(last_block_in_chain->index)+1) && ((string)rBlock->previous_block_hash).compare((string)last_block_in_chain->block_hash) == 0){
+      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque con index " + to_string(rBlock->index));
+
       last_block_in_chain=(Block *) rBlock;
       printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
       mined_blocks += 1;
@@ -231,7 +255,9 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //el siguiente a mí último bloque actual,
     //pero el bloque anterior apuntado por el recibido no es mí último actual,
     //entonces hay una blockchain más larga que la mía.
-    if((rBlock->index==(last_block_in_chain->index)+1) && ((string)rBlock->previous_block_hash).compare(last_block_in_chain->block_hash)){
+    if((rBlock->index==(last_block_in_chain->index)+1) && ((string)rBlock->previous_block_hash).compare(last_block_in_chain->block_hash) != 0){
+      log_msg("Entro a migrar");
+
       printf("[%d] Perdí la carrera por uno (%d) contra %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
       bool res = verificar_y_migrar_cadena(rBlock,status);
       return res;
@@ -241,6 +267,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //Si el índice del bloque recibido es igua al índice de mi último bloque actual,
     //entonces hay dos posibles forks de la blockchain pero mantengo la mía
     if(rBlock->index==(last_block_in_chain->index)){
+      log_msg("No hago nada");
       printf("[%d] Conflicto suave: Conflicto de branch (%d) contra %d \n",mpi_rank,rBlock->index,status->MPI_SOURCE);
       return false;
     }
@@ -248,6 +275,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //Si el índice del bloque recibido es anterior al índice de mi último bloque actual,
     //entonces lo descarto porque asumo que mi cadena es la que está quedando preservada.
     if(rBlock->index<(last_block_in_chain->index)){
+      log_msg("No hago nada");
       printf("[%d] Conflicto suave: Descarto el bloque (%d vs %d) contra %d \n",mpi_rank,rBlock->index,last_block_in_chain->index, status->MPI_SOURCE);
       return false;
     }
@@ -255,6 +283,8 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //Si el índice del bloque recibido está más de una posición adelantada a mi último bloque actual,
     //entonces me conviene abandonar mi blockchain actual
     if(rBlock->index>(last_block_in_chain->index)){
+      log_msg("Entro a migrar");
+
       printf("[%d] Perdí la carrera por varios contra %d \n", mpi_rank, status->MPI_SOURCE);
       bool res = verificar_y_migrar_cadena(rBlock,status);
       return res;
@@ -327,6 +357,8 @@ void* proof_of_work(void *ptr){
 
             //cout << "[" + to_string(mpi_rank) + "]: same length." << endl;
 
+            log_msg("Agrego el nodo con index " + to_string(block.index) + " y last_block_in_chain tiene index " + to_string(last_block_in_chain->index));
+
             mined_blocks += 1;
             *last_block_in_chain = block;
             strcpy(last_block_in_chain->block_hash, hash_hex_str.c_str());
@@ -337,6 +369,7 @@ void* proof_of_work(void *ptr){
             //cout << "[" + to_string(mpi_rank) + "]: mutex lock." << endl;
             send_block_to_everyone(*last_block_in_chain);
             //cout << "[" + to_string(mpi_rank) + "]: broadcast done." << endl; 
+            //assert(sanity_test() == true);
           }
           pthread_mutex_unlock(&(_sendMutex));
 
@@ -372,7 +405,7 @@ int send_blockchain(Block buffer, const MPI_Status *status){
     printf("[%d] send to node %d failed with error code %d \n",mpi_rank, rank_of_asking_node, send_return_status);
   }
 
-  log_chain();
+  log_chain("Send blockchain");
 
   delete []blockchain;
 
@@ -427,8 +460,9 @@ int node(){
         // validate_block_for_chain con el bloque recibido y el estado de MPI
         /*printf("[%u] Recibí bloque \n", mpi_rank);
         print_block(&buffer);*/
+        //assert (sanity_test() == true);
         validate_block_for_chain(&buffer,&status);
-      
+
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
         verify_chain_indexes("TAG_CHAIN_HASH");
         send_blockchain(buffer, &status);
