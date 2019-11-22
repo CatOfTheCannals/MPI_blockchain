@@ -56,7 +56,7 @@ void log_chain(){
 }
 
 
-bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
+void verify_chain_indexes(string label){
   bool good_indexes = true;
   unsigned int current_index = last_elem->index;
   Block* current_block_from_list = last_elem;
@@ -68,9 +68,21 @@ bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
   
     if( prev_block_hash.empty() ) break;
   
+    auto it = node_blocks_map.find(prev_block_hash);
+    if (it != mymap.end()) {
+      current_block_from_list = &(it->second);
+    } else {
+      printf("[%d] %s broken chain \n", mpi_rank, label);
+    }
+
     current_block_from_list = &node_blocks_map.at(prev_block_hash);
   }
-  return good_indexes;
+
+  if(good_indexes) {
+     printf("[%d] %s good indexes \n", mpi_rank, label);
+    } else {
+      printf("[%d] %s bad indexes \n", mpi_rank, label);
+  }
 }
 
 bool check_first(const Block *blockchain, const Block *rBlock){
@@ -143,14 +155,10 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
 
 
-
-
     // BORRAR ESTE WHILE (1) 
      while(1){
       cout << "[" + to_string(mpi_rank) + "]: estoy trabado " << endl;
      }
-
-
 
 
 
@@ -172,12 +180,9 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
     // TODO(charli): cambiar total_blocks
 
-    if(verify_chain_indexes(last_block_in_chain, node_blocks)){
-      printf("[%d] es valida! \n", mpi_rank);
-    } else {
-      printf("[%d] no es valida D: \n", mpi_rank);
-    }
-
+    string label = "cadena agregada";
+    verify_chain_indexes(label);
+   
     delete []received_blockchain;
     return true;
   }
