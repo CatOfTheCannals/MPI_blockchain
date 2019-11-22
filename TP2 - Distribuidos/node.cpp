@@ -28,7 +28,7 @@ void print_block(const Block *block){
   cout << "Block number: " << block->index << endl;
   cout << "Owner: " << block->node_owner_number << endl;
   //cout << "Difficulty: " << block->difficulty << endl;
-  //cout << "Created at: " << block->created_at << endl;
+  //cout << "Created at: " << block->created_at << endl; 
   //cout << "Nonce: " << (string)block->nonce << endl;
   cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
   cout << "Block hash: " << (string)block->block_hash << endl;
@@ -68,8 +68,8 @@ void log_msg(string msg){
 
 void verify_chain_indexes(string label){
   bool good_indexes = true;
-  unsigned int current_index = last_elem->index;
-  Block* current_block_from_list = last_elem;
+  unsigned int current_index = last_block_in_chain->index;
+  Block* current_block_from_list = last_block_in_chain;
 
   while(true) {
     string prev_block_hash = current_block_from_list->previous_block_hash;
@@ -78,20 +78,20 @@ void verify_chain_indexes(string label){
   
     if( prev_block_hash.empty() ) break;
   
-    auto it = node_blocks_map.find(prev_block_hash);
-    if (it != mymap.end()) {
+    auto it = node_blocks.find(prev_block_hash);
+    if (it != node_blocks.end()) {
       current_block_from_list = &(it->second);
     } else {
-      printf("[%d] %s broken chain \n", mpi_rank, label);
+      cout << "[" + to_string(mpi_rank) + "]:" << label << "broken chain" << endl;
     }
 
-    current_block_from_list = &node_blocks_map.at(prev_block_hash);
+    current_block_from_list = &node_blocks.at(prev_block_hash);
   }
 
   if(good_indexes) {
-     printf("[%d] %s good indexes \n", mpi_rank, label);
-    } else {
-      printf("[%d] %s bad indexes \n", mpi_rank, label);
+    cout << "[" + to_string(mpi_rank) + "]:" << label << "good indexes" << endl;
+  } else {
+    cout << "[" + to_string(mpi_rank) + "]:" << label << "bad indexes" << endl;
   }
 }
 
