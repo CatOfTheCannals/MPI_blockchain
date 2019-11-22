@@ -28,7 +28,7 @@ void print_block(const Block *block){
   cout << "Block number: " << block->index << endl;
   cout << "Owner: " << block->node_owner_number << endl;
   //cout << "Difficulty: " << block->difficulty << endl;
-  //cout << "Created at: " << block->created_at << endl;
+  //cout << "Created at: " << block->created_at << endl; 
   //cout << "Nonce: " << (string)block->nonce << endl;
   cout << "Previous block hash: " << (string)block->previous_block_hash << endl;
   cout << "Block hash: " << (string)block->block_hash << endl;
@@ -66,10 +66,10 @@ void log_msg(string msg){
 }
 
 
-bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
+void verify_chain_indexes(string label){
   bool good_indexes = true;
-  unsigned int current_index = last_elem->index;
-  Block* current_block_from_list = last_elem;
+  unsigned int current_index = last_block_in_chain->index;
+  Block* current_block_from_list = last_block_in_chain;
 
   while(true) {
     string prev_block_hash = current_block_from_list->previous_block_hash;
@@ -78,9 +78,21 @@ bool verify_chain_indexes(Block* last_elem, map<string,Block> node_blocks_map){
   
     if( prev_block_hash.empty() ) break;
   
-    current_block_from_list = &node_blocks_map.at(prev_block_hash);
+    auto it = node_blocks.find(prev_block_hash);
+    if (it != node_blocks.end()) {
+      current_block_from_list = &(it->second);
+    } else {
+      cout << "[" + to_string(mpi_rank) + "]:" << label << "broken chain" << endl;
+    }
+
+    current_block_from_list = &node_blocks.at(prev_block_hash);
   }
-  return good_indexes;
+
+  if(good_indexes) {
+    cout << "[" + to_string(mpi_rank) + "]:" << label << "good indexes" << endl;
+  } else {
+    cout << "[" + to_string(mpi_rank) + "]:" << label << "bad indexes" << endl;
+  }
 }
 
 bool sanity_test(){
@@ -137,7 +149,7 @@ int find_block(const Block *blockchain, const map<string,Block> &node_blocks){
 //Si nos separan más de VALIDATION_BLOCKS bloques de distancia entre las cadenas, se descarta por seguridad
 bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
-  printf("[%d] verificar_y_migrar_cadena\n", mpi_rank);
+  verify_chain_indexes("verificar_y_migrar_cadena");
 
   //Enviar mensaje TAG_CHAIN_HASH
   MPI_Send(rBlock, 1, *MPI_BLOCK, rBlock->node_owner_number, TAG_CHAIN_HASH, MPI_COMM_WORLD);
@@ -164,8 +176,6 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
 
 
-
-
     // BORRAR ESTE WHILE (1) 
      while(1){
       cout << "[" + to_string(mpi_rank) + "]: estoy trabado " << endl;
@@ -173,13 +183,11 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
 
 
-
-
     // seteo nuevo last elements
     *last_block_in_chain = received_blockchain[0];
     
     // agrego las entradas de la nueva cadena
-    cout << "agrego nuevas entradas" << endl;
+    verify_chain_indexes("agrego nuevas entradas");
     for(int j = 0; j < i+1; j++){
       Block current_received_block = received_blockchain[j];
 
@@ -189,21 +197,17 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
       // Esto ya no es necesario porque agregamos hasta el elemento i que es el primero o alguno en común if(string(current_received_block.previous_block_hash).empty()) break;
     }
 
-    printf("[%d] termine de agregar cadena \n", mpi_rank);
+    verify_chain_indexes("termine de agregar cadena");
 
-    // TODO(charli): cambiar total_blocks
+    // TODO(charli): actualizar total_blocks
 
-    if(verify_chain_indexes(last_block_in_chain, node_blocks)){
-      printf("[%d] es valida! \n", mpi_rank);
-    } else {
-      printf("[%d] no es valida D: \n", mpi_rank);
-    }
-
+    verify_chain_indexes("cadena agregada");
+   
     delete []received_blockchain;
     return true;
   }
 
-  printf("[%d] descarte cadena \n", mpi_rank);
+  verify_chain_indexes("descarte cadena");
 
   delete []received_blockchain;
   return false;
@@ -213,7 +217,7 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
   if(valid_new_block(rBlock)){
 
-    printf("[%d] Block is valid \n", mpi_rank); 
+    verify_chain_indexes("Block is valid"); 
 
     log_chain("Validate (entro)");   
 
@@ -455,7 +459,7 @@ int node(){
 
       //Si es un mensaje de nuevo bloque, llamar a la función
       if(status.MPI_TAG==TAG_NEW_BLOCK){
-        printf("[%u] validate_block_for_chain \n", mpi_rank);
+        verify_chain_indexes("validate_block_for_chain");
         // validate_block_for_chain con el bloque recibido y el estado de MPI
         /*printf("[%u] Recibí bloque \n", mpi_rank);
         print_block(&buffer);*/
@@ -466,10 +470,11 @@ int node(){
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
         printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
         log_msg("No debería haber entrado acá");
+
         send_blockchain(buffer, &status);
 
       }else{
-        printf("NO RECIBIO NADA\n");
+        verify_chain_indexes("NO RECIBIO NADA");
       }
 
       pthread_mutex_unlock(&(_sendMutex));

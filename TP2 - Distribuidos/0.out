@@ -1,0 +1,349 @@
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 0
+Owner: 0
+Previous block hash: 
+Block hash: 
+--------------------
+Recibi bloque
+--------------------
+Mi blockchain es la siguiente en Validate (entro)
+--------------------
+Block number: 0
+Owner: 0
+Previous block hash: 
+Block hash: 
+--------------------
+Considero el bloque de index 1 enviado por 1
+--------------------
+Mi último bloque tiene index 0 y agrego el bloque enviado por 1 con index 1
+--------------------
+Mi blockchain es la siguiente en Valdate (salgo)
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en node
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Recibi bloque
+--------------------
+Mi blockchain es la siguiente en Validate (entro)
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Considero el bloque de index 2 enviado por 3
+--------------------
+Mi último bloque tiene index 1 y agrego el bloque enviado por 3 con index 2
+--------------------
+Mi blockchain es la siguiente en Valdate (salgo)
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en node
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Recibi bloque
+--------------------
+Mi blockchain es la siguiente en Validate (entro)
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Considero el bloque de index 2 enviado por 1
+--------------------
+Conflicto suave. El bloque recibido de: 1 tiene index: 2 que es igual al de last: 2
+--------------------
+Mi blockchain es la siguiente en Valdate (salgo)
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en node
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Proof (antes de agregar)
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Agrego el nodo con index 3 y last_block_in_chain tiene index 2
+--------------------
+Recibi bloque
+--------------------
+Mi blockchain es la siguiente en Proof (después de agregar)
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en proof
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+No debería haber entrado acá
+--------------------
+Mi blockchain es la siguiente en Send blockchain
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en node
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Recibi bloque
+--------------------
+No debería haber entrado acá
+--------------------
+Mi blockchain es la siguiente en Send blockchain
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Luego de liberar el mutex en node
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Antes de esperar otro mensaje en node
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Mi blockchain es la siguiente en Proof (antes de agregar)
+--------------------
+Block number: 3
+Owner: 0
+Previous block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+Block hash: 0031483eb3cfd470c9e63bebbee17c7747081e07472c84b87ba45f542126cb47
+--------------------
+--------------------
+Block number: 2
+Owner: 3
+Previous block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+Block hash: 003c37037bee0cea7ec2281786c1c76cd58ea46b2ef11149b78829f2661f3c87
+--------------------
+--------------------
+Block number: 1
+Owner: 1
+Previous block hash: 
+Block hash: 0030dae05cac9c7130315fccc567283f4649448feb3bbc5ac6295bac7194c922
+--------------------
+Agrego el nodo con index 4 y last_block_in_chain tiene index 3
+--------------------
+Recibi bloque
+--------------------
