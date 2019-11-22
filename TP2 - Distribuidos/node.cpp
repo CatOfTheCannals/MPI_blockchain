@@ -219,16 +219,16 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
     //Agrego el bloque al diccionario, aunque no
     //necesariamente eso lo agrega a la cadena
-    node_blocks[string(rBlock->block_hash)]=*rBlock;
+    node_blocks.insert({(string)rBlock->block_hash,*rBlock});
     
     //Block blockToSet=*rBlock; LO DEJO COMENTADO POR LAS DUDAS :) 
-    
+    log_msg("Considero el bloque de index " + to_string(rBlock->index) + " enviado por " + to_string(status->MPI_SOURCE));
     //Si el índice del bloque recibido es 1
     //y mí último bloque actual tiene índice 0,
     //entonces lo agrego como nuevo último.
     if((rBlock->index==1) && (last_block_in_chain->index==0)){
-      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque con index " + to_string(rBlock->index));
-      last_block_in_chain=(Block *) rBlock;
+      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque enviado por " +  to_string(status->MPI_SOURCE) + " con index " + to_string(rBlock->index));
+      last_block_in_chain= (&node_blocks.at((string)rBlock->block_hash));
       printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index, status->MPI_SOURCE);
       mined_blocks += 1;
       return true;
@@ -239,9 +239,8 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //y el bloque anterior apuntado por el recibido es mí último actual,
     //entonces lo agrego como nuevo último.
     if((rBlock->index==(last_block_in_chain->index)+1) && ((string)rBlock->previous_block_hash).compare((string)last_block_in_chain->block_hash) == 0){
-      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque con index " + to_string(rBlock->index));
-
-      last_block_in_chain=(Block *) rBlock;
+      log_msg("Mi último bloque tiene index " + to_string(last_block_in_chain->index) + " y agrego el bloque enviado por " +  to_string(status->MPI_SOURCE) + " con index " + to_string(rBlock->index));
+      last_block_in_chain=  (&node_blocks.at((string)rBlock->block_hash));
       printf("[%d] Agregado a la lista bloque con index %u enviado por %d \n", mpi_rank, rBlock->index,status->MPI_SOURCE);
       mined_blocks += 1;
       return true;
@@ -263,7 +262,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //Si el índice del bloque recibido es igua al índice de mi último bloque actual,
     //entonces hay dos posibles forks de la blockchain pero mantengo la mía
     if(rBlock->index==(last_block_in_chain->index)){
-      log_msg("No hago nada");
+      log_msg("Conflicto suave. El bloque recibido de: " + to_string(status->MPI_SOURCE) + " tiene index: " + to_string(rBlock->index) + " que es igual al de last: " + to_string(last_block_in_chain->index));
       printf("[%d] Conflicto suave: Conflicto de branch (%d) contra %d \n",mpi_rank,rBlock->index,status->MPI_SOURCE);
       return false;
     }
@@ -271,7 +270,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
     //Si el índice del bloque recibido es anterior al índice de mi último bloque actual,
     //entonces lo descarto porque asumo que mi cadena es la que está quedando preservada.
     if(rBlock->index<(last_block_in_chain->index)){
-      log_msg("No hago nada");
+      log_msg("Preservo mi cadena. El bloque recibido de: " + to_string(status->MPI_SOURCE) + " tiene index: " + to_string(rBlock->index) + " que es menor al de last: " + to_string(last_block_in_chain->index));
       printf("[%d] Conflicto suave: Descarto el bloque (%d vs %d) contra %d \n",mpi_rank,rBlock->index,last_block_in_chain->index, status->MPI_SOURCE);
       return false;
     }
@@ -322,6 +321,7 @@ void* proof_of_work(void *ptr){
     string hash_hex_str;
     Block block;
     while(true){
+      pthread_mutex_lock(&(_sendMutex));
 
       block = *last_block_in_chain;
 
@@ -333,13 +333,13 @@ void* proof_of_work(void *ptr){
       memcpy(block.previous_block_hash,block.block_hash,HASH_SIZE);
       
       ////cout << "[" + to_string(mpi_rank) + "]: memcpy done." << endl;
-      
+
       //Agregar un nonce al azar al bloque para intentar resolver el problema
       gen_random_nonce(block.nonce);
 
       //Hashear el contenido (con el nuevo nonce)
       block_to_hash(&block,hash_hex_str);
-
+      //log_chain("En el loop de proof");
       //Contar la cantidad de ceros iniciales (con el nuevo nonce)
       if(solves_problem(hash_hex_str)){
 
@@ -347,18 +347,19 @@ void* proof_of_work(void *ptr){
 
 
           //Verifico que no haya cambiado mientras calculaba
-          pthread_mutex_lock(&(_sendMutex));
 
           if(last_block_in_chain->index < block.index){
+
+            log_chain("Proof (antes de agregar)");
 
             //cout << "[" + to_string(mpi_rank) + "]: same length." << endl;
 
             log_msg("Agrego el nodo con index " + to_string(block.index) + " y last_block_in_chain tiene index " + to_string(last_block_in_chain->index));
 
             mined_blocks += 1;
-            *last_block_in_chain = block;
-            strcpy(last_block_in_chain->block_hash, hash_hex_str.c_str());
-            node_blocks.insert({hash_hex_str, *last_block_in_chain}); //[hash_hex_str] = *last_block_in_chain;
+            strcpy(block.block_hash, hash_hex_str.c_str());
+            node_blocks.insert({hash_hex_str, block}); //[hash_hex_str] = *last_block_in_chain;
+            last_block_in_chain = &node_blocks.at(hash_hex_str);
             printf("[%d] Agregué un producido con index %u \n",mpi_rank,last_block_in_chain->index);
 
             //TODO: Mientras comunico, no responder mensajes de nuevos nodos
@@ -366,11 +367,13 @@ void* proof_of_work(void *ptr){
             send_block_to_everyone(*last_block_in_chain);
             //cout << "[" + to_string(mpi_rank) + "]: broadcast done." << endl; 
             //assert(sanity_test() == true);
+
+            log_chain("Proof (después de agregar)");
           }
-          pthread_mutex_unlock(&(_sendMutex));
+          log_chain("Luego de liberar el mutex en proof");
 
       }
-
+      pthread_mutex_unlock(&(_sendMutex));
     }
 
     return NULL;
@@ -445,9 +448,9 @@ int node(){
       Block buffer;
       MPI_Status status;
 
-
+      log_chain("Antes de esperar otro mensaje en node");
       MPI_Recv(&buffer, 1, *MPI_BLOCK, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
+      log_msg("Recibi bloque");
       pthread_mutex_lock(&(_sendMutex));
 
       //Si es un mensaje de nuevo bloque, llamar a la función
@@ -458,9 +461,11 @@ int node(){
         print_block(&buffer);*/
         //assert (sanity_test() == true);
         validate_block_for_chain(&buffer,&status);
+        log_chain("Valdate (salgo)");
 
       }else if(status.MPI_TAG==TAG_CHAIN_HASH){ //Si es un mensaje de pedido de cadena,
         printf("[%u] TAG_CHAIN_HASH \n", mpi_rank);
+        log_msg("No debería haber entrado acá");
         send_blockchain(buffer, &status);
 
       }else{
@@ -468,7 +473,7 @@ int node(){
       }
 
       pthread_mutex_unlock(&(_sendMutex));
-
+      log_chain("Luego de liberar el mutex en node");
 
   }
 

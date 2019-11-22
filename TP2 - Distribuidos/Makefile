@@ -21,4 +21,4 @@ clean:
 new: clean all
 
 run: blockchain
-	mpirun --oversubscribe -np 3 ./blockchain
+	mpirun --oversubscribe -np 4 ./blockchain
