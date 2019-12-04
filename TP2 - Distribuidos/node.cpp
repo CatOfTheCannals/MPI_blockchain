@@ -333,7 +333,7 @@ void* proof_of_work(void *ptr){
       }
       pthread_mutex_unlock(&(_sendMutex));
     }
-    pthread_kill(tid, 3);
+    MPI_Abort(MPI_COMM_WORLD,0);
     pthread_exit(0);
 }
 
