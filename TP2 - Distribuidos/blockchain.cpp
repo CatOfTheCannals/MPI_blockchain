@@ -1,8 +1,7 @@
 #include "block.h"
 #include "node.h"
 #include <mpi.h>
-
-
+#include <iostream>
 
 using namespace std;
 
@@ -33,6 +32,8 @@ int main(int argc, char **argv) {
   
   //Llama a la función que maneja cada nodo
   node();
+
+  cout << "SALIERON" << endl;
 
   // Limpio MPI
   MPI_Finalize();

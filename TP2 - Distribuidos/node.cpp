@@ -11,6 +11,7 @@
 #include <iostream> 
 #include <fstream>
 #include <assert.h>     /* assert */
+#include <signal.h>
 
 
 using namespace std;
@@ -19,6 +20,7 @@ int total_nodes, created_nodes, mpi_rank;
 Block *last_block_in_chain;
 map<string,Block> node_blocks;
 unsigned int mined_blocks = 0;
+unsigned long tid;
 
 
 pthread_mutex_t _sendMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -280,6 +282,9 @@ void send_block_to_everyone(const Block block){
 //Proof of work 
 void* proof_of_work(void *ptr){
 
+    //cout << "Mi tid es " + to_string(pthread_self()) + " y el valor de tid es " + to_string(tid) << endl;
+
+
     string hash_hex_str;
     Block block;
     while(true){
@@ -328,6 +333,7 @@ void* proof_of_work(void *ptr){
       }
       pthread_mutex_unlock(&(_sendMutex));
     }
+    pthread_kill(tid, 3);
     pthread_exit(0);
 }
 
@@ -374,6 +380,11 @@ Block* initialize_first_block() {
   return b;
 }
 
+void end_exc(int sig){
+  cout << "Salgo" << endl;
+  pthread_exit(0);
+}
+
 int node(){
 
   //Tomar valor de mpi_rank y de nodos totales
@@ -388,8 +399,14 @@ int node(){
   Block *lastblock_reference = last_block_in_chain;
 
   pthread_t thread;
+  tid = pthread_self();
+
+  signal(3,end_exc);
+
+
   //Crear thread para minar
   pthread_create(&thread, NULL, proof_of_work, NULL);
+  //cout << "Mi tid es " + to_string(pthread_self()) + " y el valor de tid es " + to_string(tid) << endl;
   while(true){
 
       //Recibir mensajes de otros nodos
