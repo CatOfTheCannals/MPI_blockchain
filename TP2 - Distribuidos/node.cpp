@@ -325,7 +325,7 @@ void* proof_of_work(void *ptr){
             last_block_in_chain = &node_blocks.at(hash_hex_str);
             printf("[%d] Agregué un producido con index %u \n",mpi_rank,last_block_in_chain->index);
 
-            //: Mientras comunico, no respondo mensajes de nuevos nodos
+            // Mientras comunico, no respondo mensajes de nuevos nodos 
             send_block_to_everyone(*last_block_in_chain);
 
           }
