@@ -116,7 +116,7 @@ bool check_first(const Block *blockchain, const Block *rBlock){
 
 bool check_chain(const Block *blockchain){
   bool check = true;
-  for (int i = 0; i < VALIDATION_BLOCKS; ++i){
+  for (int i = 0; i < VALIDATION_BLOCKS-1; ++i){
     if(((string)blockchain[i].previous_block_hash).empty()) break;
     check = ((!((string)blockchain[i].previous_block_hash).compare( ((string)blockchain[i+1].block_hash))) 
       && (blockchain[i].index - 1 == blockchain[i+1].index) && check);
@@ -162,8 +162,8 @@ bool verificar_y_migrar_cadena(const Block *rBlock, const MPI_Status *status){
 
   bool received_blockchain_checks = check_first(received_blockchain, rBlock) && check_chain(received_blockchain);
 
-  // 1) Si devuelve 0 no encontró nada 
-  // 2) Si devuelve 1 entonces llegó al primero 
+  // 1) Si devuelve -1 no encontró nada 
+  // 2) Si encontró un elemento en común entre la blockchain nueva y la que ya se tenía o llegó al bloque con index 1, devuelve la posición en blockchain
   int i = find_block(received_blockchain, node_blocks);
   
   cout << "[" + to_string(mpi_rank) + "]: find = " + to_string(i) + " | received_blockchain_checks = " + to_string(received_blockchain_checks) << endl;
@@ -246,7 +246,7 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
     //Si el índice del bloque recibido está más de una posición adelantada a mi último bloque actual,
     //entonces me conviene abandonar mi blockchain actual
-    if(rBlock->index>(last_block_in_chain->index)){
+    if(rBlock->index>(last_block_in_chain->index)+1){
       printf("[%d] Perdí la carrera por varios contra %d \n", mpi_rank, status->MPI_SOURCE);
       bool res = verificar_y_migrar_cadena(rBlock,status);
       return res;
@@ -259,17 +259,12 @@ bool validate_block_for_chain(const Block *rBlock, const MPI_Status *status){
 
 void send_block_to_everyone(const Block block){
   int new_rank;
-  cout << "[" + to_string(mpi_rank) + "]: total nodes " + to_string(total_nodes) + "." << endl;
 
   for(int i = 1; i < total_nodes; i++){
   
     new_rank = (mpi_rank + i) % total_nodes;
 
-    cout << "[" + to_string(mpi_rank) + "]: sending to " + to_string(new_rank) + "." << endl;
-
     int send_return_status = MPI_Send(&block, 1, *MPI_BLOCK, new_rank, TAG_NEW_BLOCK, MPI_COMM_WORLD);
-
-    cout << "[" + to_string(mpi_rank) + "]: sent to " + to_string(new_rank) + "." << endl;
 
     if(send_return_status != MPI_SUCCESS) {
       printf("[%d] send to node %d failed with error code %d \n",mpi_rank, new_rank, send_return_status);
@@ -329,9 +324,8 @@ void* proof_of_work(void *ptr){
             send_block_to_everyone(*last_block_in_chain);
 
           }
-
+        pthread_mutex_unlock(&(_sendMutex));
       }
-      pthread_mutex_unlock(&(_sendMutex));
     }
     MPI_Abort(MPI_COMM_WORLD,0);
     pthread_exit(0);
@@ -348,12 +342,9 @@ int send_blockchain(Block buffer, const MPI_Status *status){
   Block *blockchain = new Block[VALIDATION_BLOCKS];
   for (int i = 0; i < VALIDATION_BLOCKS; ++i){
     blockchain[i] = buffer;
-    cout << "[" + to_string(mpi_rank) + "]: estoy agregando el bloque " + to_string(i) + " de " + to_string(mined_blocks) + " y el anterior tiene hash " + (string)buffer.previous_block_hash << endl;
     if(buffer.previous_block_hash == 0 ||(string(buffer.previous_block_hash).size()==0)){
-      cout << "[" + to_string(mpi_rank) + "]: salgo" << endl;
       break;
     }
-    cout << "[" + to_string(mpi_rank) + "]: sigo  " << endl;
     buffer = node_blocks.at(buffer.previous_block_hash);
   }
 
@@ -380,10 +371,10 @@ Block* initialize_first_block() {
   return b;
 }
 
-void end_exc(int sig){
+/*void end_exc(int sig){
   cout << "Salgo" << endl;
   pthread_exit(0);
-}
+}*/
 
 int node(){
 
@@ -399,11 +390,8 @@ int node(){
   Block *lastblock_reference = last_block_in_chain;
 
   pthread_t thread;
-  tid = pthread_self();
-
-  signal(3,end_exc);
-
-
+  //tid = pthread_self();
+  //signal(3,end_exc);
   //Crear thread para minar
   pthread_create(&thread, NULL, proof_of_work, NULL);
   //cout << "Mi tid es " + to_string(pthread_self()) + " y el valor de tid es " + to_string(tid) << endl;
